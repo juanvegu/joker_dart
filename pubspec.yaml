@@ -23,12 +23,12 @@ melos:
       description: Analyze all packages in the workspace
 
     test:
-      run: melos exec --concurrency=5 --fail-fast -- "dart test --coverage"
+      run: melos exec --concurrency=5 --fail-fast -- "dart test --coverage=coverage"
       description: Run tests for all packages in the workspace
 
-    clean:
-      run: melos clean
-      description: Clean all packages in the workspace
+    tests:no-coverage:
+      run: melos exec --concurrency=5 --fail-fast -- "dart test"
+      description: Run tests for all packages in the workspace without coverage
 
   command:
     version:
