@@ -19,6 +19,9 @@ jobs:
         with:
           channel: stable
           cache: true
+
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install lcov
       
       - name: Install Melos
         run: dart pub global activate melos
@@ -31,6 +34,36 @@ jobs:
 
       - name: Run tests
         run: melos run test
+
+      - name: Combine coverage reports
+        run: |
+          melos exec -c 1 -- \
+            "sed 's,^SF:lib,SF:packages/{MELOS_PACKAGE_NAME}/lib,' coverage/lcov.info > coverage/lcov_combined_temp.info"
+          cat packages/*/coverage/lcov_combined_temp.info > coverage/lcov.info
+
+      - name: Check code coverage threshold
+        uses: VeryGoodOpenSource/very_good_coverage@v3.0.0
+        with:
+          path: coverage/lcov.info
+          min_coverage: 80
+
+      - name: Generate LCOV summary
+        id: lcov_summary
+        run: |
+          summary=$(lcov --summary coverage/lcov.info)
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo "### 📊 Code Coverage Report" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          echo "$summary" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Post coverage summary as a PR comment
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2.9.4
+        with:
+          message: ${{ steps.lcov_summary.outputs.summary }}
 
       - name: Clean project
         run: melos clean
