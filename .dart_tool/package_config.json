@@ -398,7 +398,7 @@
       "languageVersion": "3.1"
     },
     {
-      "name": "joker_dart",
+      "name": "joker_workspace",
       "rootUri": "../",
       "packageUri": "lib/",
       "languageVersion": "3.9"

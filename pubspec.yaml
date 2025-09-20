@@ -1,4 +1,4 @@
-name: joker_dart
+name: joker_workspace
 publish_to: none
 
 environment:
@@ -11,3 +11,25 @@ workspace:
   - packages/joker
   - packages/joker_dio
   - packages/joker_http
+
+melos:
+  scripts:
+    get:
+      run: melos bootstrap
+      description: Get dependencies for all packages in the workspace
+
+    analyze:
+      run: melos exec -- dart analyze
+      description: Analyze all packages in the workspace
+
+    test:
+      run: melos exec --concurrency=5 --fail-fast -- "dart test --coverage=coverage"
+      description: Run tests for all packages in the workspace
+
+    tests:no-coverage:
+      run: melos exec --concurrency=5 --fail-fast -- "dart test"
+      description: Run tests for all packages in the workspace without coverage
+
+  command:
+    version:
+      conventionalCommits: true
