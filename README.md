@@ -1,3 +1,3 @@
 # Joker 🃏
 
-![Joker Logo](https://raw.githubusercontent.com/juanvegu/joker_dart/feature/initial-readme/assets/joker_banner.png)
+![Joker Banner](https://raw.githubusercontent.com/juanvegu/joker_dart/main/assets/joker_banner.png)
