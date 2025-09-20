@@ -31,3 +31,6 @@ jobs:
 
       - name: Run tests
         run: melos run test
+
+      - name: Clean project
+        run: melos clean
