@@ -1,13 +1,13 @@
 {
   "roots": [
     "joker",
-    "joker_dart",
     "joker_dio",
-    "joker_http"
+    "joker_http",
+    "joker_workspace"
   ],
   "packages": [
     {
-      "name": "joker_dart",
+      "name": "joker_workspace",
       "version": "0.0.0",
       "dependencies": [],
       "devDependencies": [
