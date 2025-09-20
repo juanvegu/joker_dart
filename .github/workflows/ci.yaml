@@ -27,7 +27,7 @@ jobs:
         run: melos bootstrap
 
       - name: Analyze code
-        run: melos analyze:all
+        run: melos run analyze
 
       - name: Run tests
-        run: melos test:all
+        run: melos run test
