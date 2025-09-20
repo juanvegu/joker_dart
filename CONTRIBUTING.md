@@ -2,6 +2,10 @@
 
 First off, thank you for considering contributing to Joker! It's people like you that make the open-source community such an amazing place. We welcome any form of contribution, from reporting bugs and suggesting features to submitting pull requests.
 
+## Code of Conduct
+
+This project and everyone participating in it is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior.
+
 ## How Can I Contribute?
 
 ### Reporting Bugs
