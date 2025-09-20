@@ -1,0 +1,13 @@
+name: joker_dart
+publish_to: none
+
+environment:
+  sdk: ^3.9.2
+
+dev_dependencies:
+  melos: ^7.1.1
+
+workspace:
+  - packages/joker
+  - packages/joker_dio
+  - packages/joker_http
