@@ -14,17 +14,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1.7.1
         with:
-          channel: stable
-          cache: true
+          sdk: stable
 
       - name: Install lcov
         run: sudo apt-get update && sudo apt-get install lcov
-      
-      - name: Install Melos
-        run: dart pub global activate melos
+
+      - name: Install tools
+        run: |
+          dart pub global activate melos
+          dart pub global activate coverage
       
       - name: Bootstrap project
         run: melos bootstrap
@@ -35,35 +36,52 @@ jobs:
       - name: Run tests
         run: melos run test
 
-      # - name: Combine coverage reports
-      #   run: |
-      #     melos exec -c 1 -- \
-      #       "sed 's,^SF:lib,SF:packages/{MELOS_PACKAGE_NAME}/lib,' coverage/lcov.info > coverage/lcov_combined_temp.info"
-      #     cat packages/*/coverage/lcov_combined_temp.info > coverage/lcov.info
+      - name: Convert JSON to LCOV and combine
+        run: |
+          mkdir -p coverage
+          touch coverage/lcov.info
+          JSON_FILES=$(find packages -path '*/coverage/test/*_test.dart.vm.json')
+          for FILE in $JSON_FILES
+          do
+            PACKAGE_NAME=$(echo $FILE | cut -d '/' -f 2)
+            echo "Processing coverage for package: $PACKAGE_NAME from file: $FILE"
+            dart pub global run coverage:format_coverage --lcov --in=$FILE --out=coverage/temp_lcov.info --packages=.dart_tool/package_config.json
+            sed "s,^SF:lib,SF:packages/$PACKAGE_NAME/lib," "coverage/temp_lcov.info" >> coverage/lcov.info
+            rm coverage/temp_lcov.info
+          done
 
-      - name: Check code coverage threshold
+      - name: Check coverage with Very Good Coverage
         uses: VeryGoodOpenSource/very_good_coverage@v3.0.0
         with:
           path: coverage/lcov.info
           min_coverage: 85
 
-      # - name: Generate LCOV summary
-      #   id: lcov_summary
-      #   run: |
-      #     summary=$(lcov --summary coverage/lcov.info)
-      #     echo "summary<<EOF" >> $GITHUB_OUTPUT
-      #     echo "### 📊 Code Coverage Report" >> $GITHUB_OUTPUT
-      #     echo "" >> $GITHUB_OUTPUT
-      #     echo '```' >> $GITHUB_OUTPUT
-      #     echo "$summary" >> $GITHUB_OUTPUT
-      #     echo '```' >> $GITHUB_OUTPUT
-      #     echo "EOF" >> $GITHUB_OUTPUT
+      - name: Generate LCOV summary for PR comment
+        id: lcov_summary
+        run: |
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          summary=$(lcov --summary coverage/lcov.info)
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo "### 📊 Code Coverage Report for commit \`$COMMIT_SHA\`" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          echo "$summary" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
-      # - name: Post coverage summary as a PR comment
-      #   if: github.event_name == 'pull_request'
-      #   uses: marocchino/sticky-pull-request-comment@v2.9.4
-      #   with:
-      #     message: ${{ steps.lcov_summary.outputs.summary }}
+      - name: Post new coverage comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `${{ steps.lcov_summary.outputs.summary }}`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
 
       - name: Clean project
         run: melos clean
