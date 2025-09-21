@@ -50,17 +50,23 @@ jobs:
             rm coverage/temp_lcov.info
           done
 
+      - name: Filter coverage report
+        run: |
+          # Usamos el comando lcov para remover las entradas no deseadas.
+          # Eliminamos los archivos del .pub-cache y los propios archivos de test.
+          lcov --remove coverage/lcov.info '*/.pub-cache/*' '*/test/*' -o coverage/lcov_filtered.info
+
       - name: Check coverage with Very Good Coverage
         uses: VeryGoodOpenSource/very_good_coverage@v3.0.0
         with:
-          path: coverage/lcov.info
-          min_coverage: 85
+          path: coverage/lcov_filtered.info
+          min_coverage: 90
 
       - name: Generate LCOV summary for PR comment
         id: lcov_summary
         run: |
           COMMIT_SHA=$(git rev-parse --short HEAD)
-          summary=$(lcov --summary coverage/lcov.info)
+          summary=$(lcov --summary coverage/lcov_filtered.info)
           echo "summary<<EOF" >> $GITHUB_OUTPUT
           echo "### 📊 Code Coverage Report for commit \`$COMMIT_SHA\`" >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
