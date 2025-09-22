@@ -62,17 +62,42 @@ jobs:
           path: coverage/lcov_filtered.info
           min_coverage: 90
 
-      - name: Generate LCOV summary for PR comment
+      - name: Generate LCOV summary with per-package breakdown
         id: lcov_summary
         run: |
           COMMIT_SHA=$(git rev-parse --short HEAD)
-          summary=$(lcov --summary coverage/lcov_filtered.info)
+          
+          SUMMARY_BODY="### 📊 Code Coverage Report for commit \`$COMMIT_SHA\`\n\n"
+          SUMMARY_BODY+="| Package | Lines Coverage | Functions Coverage | Branches Coverage |\n"
+          SUMMARY_BODY+="| :--- | :--- | :--- | :--- |\n"
+
+          PACKAGES=$(find packages -name "pubspec.yaml" -exec dirname {} \;)
+          
+          for PKG_PATH in $PACKAGES
+          do
+            PKG_NAME=$(basename $PKG_PATH)
+            
+            lcov --extract "coverage/lcov_filtered.info" "*/$PKG_NAME/*" --output "coverage/${PKG_NAME}_coverage.info"
+            
+            if [ -s "coverage/${PKG_NAME}_coverage.info" ]; then
+              PKG_SUMMARY=$(lcov --summary "coverage/${PKG_NAME}_coverage.info")
+              LINES=$(echo "$PKG_SUMMARY" | grep "lines......:" | awk '{print $2, $3}')
+              FUNCTIONS=$(echo "$PKG_SUMMARY" | grep "functions..:" | awk '{print $2, $3}')
+              BRANCHES=$(echo "$PKG_SUMMARY" | grep "branches...:" | awk '{print $2, $3}')
+              
+              SUMMARY_BODY+="| **$PKG_NAME** | \`$LINES\` | \`$FUNCTIONS\` | \`$BRANCHES\` |\n"
+            else
+              # Si el paquete no tiene tests, lo indicamos
+              SUMMARY_BODY+="| **$PKG_NAME** | `No tests found` | `No tests found` | `No tests found` |\n"
+            fi
+          done
+
+          OVERALL_SUMMARY=$(lcov --summary coverage/lcov_filtered.info)
+          SUMMARY_BODY+="\n**Overall Project Coverage**\n"
+          SUMMARY_BODY+="""\`\`\`\n$OVERALL_SUMMARY\n\`\`\`"""
+          
           echo "summary<<EOF" >> $GITHUB_OUTPUT
-          echo "### 📊 Code Coverage Report for commit \`$COMMIT_SHA\`" >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo '```' >> $GITHUB_OUTPUT
-          echo "$summary" >> $GITHUB_OUTPUT
-          echo '```' >> $GITHUB_OUTPUT
+          echo -e "$SUMMARY_BODY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Post new coverage comment on PR
@@ -81,7 +106,8 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `${{ steps.lcov_summary.outputs.summary }}`;
+            const output = ${{ toJSON(steps.lcov_summary.outputs.summary) }};
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
