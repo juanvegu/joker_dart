@@ -70,7 +70,7 @@ melos bootstrap
 You can run all tests across the entire ecosystem with a single command:
 
 ```bash
-melos test:all 
+melos run test 
 ```
 
 ---

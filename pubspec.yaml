@@ -14,10 +14,6 @@ workspace:
 
 melos:
   scripts:
-    get:
-      run: melos bootstrap
-      description: Get dependencies for all packages in the workspace
-
     analyze:
       run: melos exec -- dart analyze
       description: Analyze all packages in the workspace
