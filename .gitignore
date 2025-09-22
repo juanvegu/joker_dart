@@ -3,4 +3,5 @@
 
 # Flutter/Dart/Pub
 .dart_tool/
+.idea/
 coverage/
