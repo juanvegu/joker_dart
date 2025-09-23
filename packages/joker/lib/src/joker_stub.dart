@@ -32,12 +32,4 @@ class JokerStub {
       removeAfterUse: removeAfterUse,
     );
   }
-
-  /// Checks if this stub matches the given request
-  bool matches(HttpClientRequest request) => matcher.matches(request);
-
-  /// Generates the response for the given request
-  JokerResponse generateResponse(HttpClientRequest request) {
-    return responseProvider(request);
-  }
 }
