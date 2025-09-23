@@ -65,40 +65,42 @@ jobs:
           path: coverage/lcov_filtered.info
           min_coverage: 90
 
-      - name: Generate LCOV summary with per-package breakdown
+      - name: Generate Simplified LCOV summary
         id: lcov_summary
         run: |
           COMMIT_SHA=$(git rev-parse --short HEAD)
           
-          SUMMARY_BODY="### 📊 Code Coverage Report for commit \`$COMMIT_SHA\`\n\n"
-          SUMMARY_BODY+="| Package | Lines Coverage | Functions Coverage | Branches Coverage |\n"
-          SUMMARY_BODY+="| :--- | :--- | :--- | :--- |\n"
+          # Empezamos a construir el cuerpo del comentario.
+          SUMMARY_BODY="### 📊 Code Coverage for commit \`$COMMIT_SHA\`\n\n"
+          SUMMARY_BODY+="| Package | Lines Coverage |\n"
+          SUMMARY_BODY+="| :--- | :--- |\n"
 
+          # Buscamos todos los paquetes en el workspace
           PACKAGES=$(find packages -name "pubspec.yaml" -exec dirname {} \;)
           
           for PKG_PATH in $PACKAGES
           do
             PKG_NAME=$(basename $PKG_PATH)
             
+            # Extraemos los datos de cobertura para este paquete
             lcov --extract "coverage/lcov_filtered.info" "*/$PKG_NAME/*" --output "coverage/${PKG_NAME}_coverage.info"
             
             if [ -s "coverage/${PKG_NAME}_coverage.info" ]; then
+              # Obtenemos solo el resumen de LÍNEAS
               PKG_SUMMARY=$(lcov --summary "coverage/${PKG_NAME}_coverage.info")
               LINES=$(echo "$PKG_SUMMARY" | grep "lines......:" | awk '{print $2, $3}')
-              FUNCTIONS=$(echo "$PKG_SUMMARY" | grep "functions..:" | awk '{print $2, $3}')
-              BRANCHES=$(echo "$PKG_SUMMARY" | grep "branches...:" | awk '{print $2, $3}')
-              
-              SUMMARY_BODY+="| **$PKG_NAME** | \`$LINES\` | \`$FUNCTIONS\` | \`$BRANCHES\` |\n"
+              SUMMARY_BODY+="| **$PKG_NAME** | \`$LINES\` |\n"
             else
-              # Si el paquete no tiene tests, lo indicamos
-              SUMMARY_BODY+="| **$PKG_NAME** | `No tests found` | `No tests found` | `No tests found` |\n"
+              SUMMARY_BODY+="| **$PKG_NAME** | `No tests found` |\n"
             fi
           done
 
-          OVERALL_SUMMARY=$(lcov --summary coverage/lcov_filtered.info)
-          SUMMARY_BODY+="\n**Overall Project Coverage**\n"
-          SUMMARY_BODY+="""\`\`\`\n$OVERALL_SUMMARY\n\`\`\`"""
+          # Calculamos el total general de LÍNEAS y lo añadimos al final.
+          OVERALL_LINES_COVERAGE=$(lcov --summary coverage/lcov_filtered.info | grep "lines......:" | awk '{print $2, $3}')
+          SUMMARY_BODY+="\n---\n"
+          SUMMARY_BODY+="**Total Coverage:** \`$OVERALL_LINES_COVERAGE\`"
           
+          # Pasamos el resultado final al siguiente paso
           echo "summary<<EOF" >> $GITHUB_OUTPUT
           echo -e "$SUMMARY_BODY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
