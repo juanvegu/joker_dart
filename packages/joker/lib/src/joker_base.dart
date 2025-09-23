@@ -73,6 +73,60 @@ class Joker {
     return addStub(stub);
   }
 
+  /// Convenience method for stubbing JSON responses
+  ///
+  /// Example:
+  /// ```dart
+  /// Joker.stubJson(
+  ///   host: 'api.example.com',
+  ///   path: '/users',
+  ///   data: {'users': []},
+  /// );
+  /// ```
+  static JokerStub stubJson({
+    String? host,
+    String? path,
+    String? method,
+    required Map<String, dynamic> data,
+    int statusCode = 200,
+    Map<String, String> headers = const {},
+    Duration? delay,
+    String? name,
+    bool removeAfterUse = false,
+  }) {
+    final response = JokerResponse.json(
+      data,
+      statusCode: statusCode,
+      headers: headers,
+      delay: delay,
+    );
+    return stubUrl(
+      host: host,
+      path: path,
+      method: method,
+      response: response,
+      name: name,
+      removeAfterUse: removeAfterUse,
+    );
+  }
+
+  /// Finds a stub that matches the given request
+  ///
+  /// Returns the first matching stub, or null if no stub matches.
+  /// If the stub has removeAfterUse=true, it will be removed from the stubs list.
+  static JokerStub? findStub(HttpClientRequest request) {
+    for (int i = 0; i < _stubs.length; i++) {
+      final stub = _stubs[i];
+      if (stub.matcher.matches(request)) {
+        if (stub.removeAfterUse) {
+          _stubs.removeAt(i);
+        }
+        return stub;
+      }
+    }
+    return null;
+  }
+
   /// Removes a specific stub from the registered list
   ///
   /// Returns true if the stub was found and removed, false otherwise.
