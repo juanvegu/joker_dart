@@ -33,21 +33,6 @@ class JokerStub {
     );
   }
 
-  /// Creates a stub with a dynamic response based on the request
-  factory JokerStub.dynamic({
-    required JokerMatcher matcher,
-    required JokerResponse Function(HttpClientRequest request) responseProvider,
-    String? name,
-    bool removeAfterUse = false,
-  }) {
-    return JokerStub(
-      matcher: matcher,
-      responseProvider: responseProvider,
-      name: name,
-      removeAfterUse: removeAfterUse,
-    );
-  }
-
   /// Checks if this stub matches the given request
   bool matches(HttpClientRequest request) => matcher.matches(request);
 

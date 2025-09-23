@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'http_client/http_overrides.dart';
+import 'joker_response.dart';
 import 'joker_stub.dart';
+import 'matchers/url_matcher.dart';
 
 class Joker {
   static final List<JokerStub> _stubs = [];
@@ -40,6 +42,35 @@ class Joker {
   static JokerStub addStub(JokerStub stub) {
     _stubs.add(stub);
     return stub;
+  }
+
+  /// Creates and registers a stub that matches specific URL patterns
+  ///
+  /// Example:
+  /// ```dart
+  /// Joker.stubUrl(
+  ///   host: 'api.example.com',
+  ///   path: '/users',
+  ///   method: 'GET',
+  ///   response: JokerResponse.json({'users': []}),
+  /// );
+  /// ```
+  static JokerStub stubUrl({
+    String? host,
+    String? path,
+    String? method,
+    required JokerResponse response,
+    String? name,
+    bool removeAfterUse = false,
+  }) {
+    final matcher = UrlMatcher(host: host, path: path, method: method);
+    final stub = JokerStub.create(
+      matcher: matcher,
+      response: response,
+      name: name,
+      removeAfterUse: removeAfterUse,
+    );
+    return addStub(stub);
   }
 
   /// Removes a specific stub from the registered list
