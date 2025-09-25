@@ -119,7 +119,6 @@ dev_dependencies:
 ```
 
 > **Note**: Web support is planned for a future release. Currently, Joker works on mobile and desktop platforms only.
-
 > **Tip**: Run `dart pub deps` to see the exact versions being used.
 
 ## Quick Start
