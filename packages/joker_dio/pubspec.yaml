@@ -1,11 +1,12 @@
 name: joker_dio
 description: A starting point for Dart libraries or applications.
-version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+version: 0.0.1
+homepage: https://github.com/juanvegu/joker_dart
+repository: https://github.com/juanvegu/joker_dart
 resolution: workspace
 
 environment:
-  sdk: ^3.9.2
+  sdk: ^3.9.0
 
 dev_dependencies:
   lints: ^6.0.0
