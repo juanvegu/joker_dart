@@ -78,7 +78,7 @@ class JokerResponse {
   }
 
   /// Creates a successful response with text body
-  /// 
+  ///
   /// Example:
   /// ```dart
   /// final response = JokerResponse.text('Hello, World!');
