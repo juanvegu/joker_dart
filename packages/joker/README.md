@@ -97,24 +97,30 @@ group('User Profile Tests', () {
 
 ## Installation
 
-### Native Platforms (Mobile & Desktop)
+Add to your `pubspec.yaml`:
+
+### ✅ Native Platforms (Mobile & Desktop) - Available Now
 
 ```yaml
 dev_dependencies:
-  joker: ^0.1.0-dev.1
+  joker: ^0.1.0-dev.2
 ```
 
-### Web Platform
+### 🚧 Web Platform - Coming Soon
 
-For web support, you also need a specific adapter:
+Web adapters are currently in development:
 
 ```yaml
 dev_dependencies:
-  joker: ^0.1.0-dev.1
-  joker_http: ^0.1.0-dev.1  # If using package:http
+  joker: ^0.1.0-dev.2
+  joker_http: ^0.0.1  # If using package:http (coming soon)
   # OR
-  joker_dio: ^0.1.0-dev.1   # If using package:dio
+  joker_dio: ^0.0.1   # If using package:dio (coming soon)
 ```
+
+> **Note**: Web support is planned for a future release. Currently, Joker works on mobile and desktop platforms only.
+
+> **Tip**: Run `dart pub deps` to see the exact versions being used.
 
 ## Quick Start
 
@@ -343,14 +349,14 @@ Joker uses Dart's `HttpOverrides.global` to intercept all HTTP requests made thr
 
 No changes to your existing code required - just start Joker and define your stubs!
 
-### On Web Platform
+### On Web Platform (Coming Soon)
 
-On web, `HttpOverrides` doesn't work because browsers handle HTTP requests differently. That's why we provide specific adapters:
+On web, `HttpOverrides` doesn't work because browsers handle HTTP requests differently. That's why we're developing specific adapters:
 
-- `joker_http` - Intercepts requests made through `package:http`
-- `joker_dio` - Intercepts requests made through `package:dio`
+- `joker_http` - Will intercept requests made through `package:http` (in development)
+- `joker_dio` - Will intercept requests made through `package:dio` (in development)
 
-These adapters integrate seamlessly with each HTTP client's architecture to provide the same mocking experience across all platforms.
+These adapters will integrate seamlessly with each HTTP client's architecture to provide the same mocking experience across all platforms.
 
 ## License
 

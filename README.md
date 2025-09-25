@@ -55,25 +55,25 @@ Joker.stop();
 
 ## 📦 Packages
 
-| Package | Pub.dev | Description |
-|---------|---------|-------------|
-| **[joker](packages/joker)** | [![pub](https://img.shields.io/pub/v/joker.svg)](https://pub.dev/packages/joker) | Core library with `HttpOverrides` magic (works on native platforms) |
-| **[joker_http](packages/joker_http)** | [![pub](https://img.shields.io/pub/v/joker_http.svg)](https://pub.dev/packages/joker_http) | Web adapter for `package:http` (required for web platform) |
-| **[joker_dio](packages/joker_dio)** | [![pub](https://img.shields.io/pub/v/joker_dio.svg)](https://pub.dev/packages/joker_dio) | Web adapter for `package:dio` (required for web platform) |
+| Package | Pub.dev | Status | Description |
+|---------|---------|--------|-------------|
+| **[joker](packages/joker)** | [![pub](https://img.shields.io/pub/v/joker.svg)](https://pub.dev/packages/joker) | ✅ Available | Core library with `HttpOverrides` magic (works on native platforms) |
+| **[joker_http](packages/joker_http)** | 🚧 Coming Soon | 🚧 In Development | Web adapter for `package:http` |
+| **[joker_dio](packages/joker_dio)** | 🚧 Coming Soon | 🚧 In Development | Web adapter for `package:dio` |
 
 ## Getting Started
 
 Choose based on your platform and HTTP client:
 
-### Native Platforms (Mobile & Desktop)
+### ✅ Native Platforms (Mobile & Desktop) - Available Now
 
 - **Any HTTP client using `HttpClient`** → Use `joker` only
 - Works automatically with `http`, `dio`, and most HTTP packages via `HttpOverrides`
 
-### Web Platform
+### 🚧 Web Platform - Coming Soon
 
-- **Using `package:http`** → Use `joker` + `joker_http`
-- **Using `package:dio`** → Use `joker` + `joker_dio`
+- **Using `package:http`** → Will use `joker` + `joker_http` (in development)
+- **Using `package:dio`** → Will use `joker` + `joker_dio` (in development)
 - Web requires specific adapters since `HttpOverrides` doesn't work in browsers
 
 Check the individual package documentation for detailed setup instructions.
