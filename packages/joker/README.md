@@ -5,7 +5,6 @@
 A powerful HTTP request stubbing and mocking library for Dart. Joker allows you to intercept HTTP requests made by any Dart library that uses the standard `HttpClient` and `HttpOverrides` classes, including popular packages like `dio` and `http`.
 
 [![Pub Version](https://img.shields.io/pub/v/joker)](https://pub.dev/packages/joker)
-[![Dart](https://github.com/juanvegu/joker_dart/actions/workflows/dart.yml/badge.svg)](https://github.com/juanvegu/joker_dart/actions/workflows/dart.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features

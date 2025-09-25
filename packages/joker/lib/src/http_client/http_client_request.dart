@@ -23,12 +23,12 @@ class JokerHttpClientRequest implements HttpClientRequest {
     }
 
     final response = stub.responseProvider(this);
-    
+
     // Apply delay if specified
     if (response.delay != null) {
       await Future.delayed(response.delay!);
     }
-    
+
     return JokerHttpClientResponse(response);
   }
 
