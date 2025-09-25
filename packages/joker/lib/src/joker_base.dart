@@ -9,6 +9,14 @@ class Joker {
   static HttpOverrides? _previousOverrides;
   static bool _isActive = false;
 
+  /// Returns a list of all currently registered stubs
+  ///
+  /// The returned list is a copy, so modifying it won't affect the internal state.
+  static List<JokerStub> get stubs => List.unmodifiable(_stubs);
+
+  /// Returns true if Joker is currently active and intercepting requests
+  static bool get isActive => _isActive;
+
   /// Starts intercepting HTTP requests
   ///
   /// This must be called before making any HTTP requests that you want to stub.
@@ -96,6 +104,117 @@ class Joker {
   }) {
     final response = JokerResponse.json(
       data,
+      statusCode: statusCode,
+      headers: headers,
+      delay: delay,
+    );
+    return stubUrl(
+      host: host,
+      path: path,
+      method: method,
+      response: response,
+      name: name,
+      removeAfterUse: removeAfterUse,
+    );
+  }
+
+  /// Convenience method for stubbing text responses
+  ///
+  /// Example:
+  /// ```dart
+  /// Joker.stubText(
+  ///   host: 'api.example.com',
+  ///   path: '/health',
+  ///   text: 'OK',
+  /// );
+  /// ```
+  static JokerStub stubText({
+    String? host,
+    String? path,
+    String? method,
+    required String text,
+    int statusCode = 200,
+    Map<String, String> headers = const {},
+    Duration? delay,
+    String? name,
+    bool removeAfterUse = false,
+  }) {
+    final response = JokerResponse.text(
+      text,
+      statusCode: statusCode,
+      headers: headers,
+      delay: delay,
+    );
+    return stubUrl(
+      host: host,
+      path: path,
+      method: method,
+      response: response,
+      name: name,
+      removeAfterUse: removeAfterUse,
+    );
+  }
+
+  /// Convenience method for stubbing error responses
+  ///
+  /// Example:
+  /// ```dart
+  /// Joker.stubError(
+  ///   host: 'api.example.com',
+  ///   statusCode: 404,
+  ///   message: 'Not Found',
+  /// );
+  /// ```
+  static JokerStub stubError({
+    String? host,
+    String? path,
+    String? method,
+    int statusCode = 500,
+    String? message,
+    Map<String, String> headers = const {},
+    Duration? delay,
+    String? name,
+    bool removeAfterUse = false,
+  }) {
+    final response = JokerResponse.error(
+      statusCode,
+      message: message,
+      headers: headers,
+      delay: delay,
+    );
+    return stubUrl(
+      host: host,
+      path: path,
+      method: method,
+      response: response,
+      name: name,
+      removeAfterUse: removeAfterUse,
+    );
+  }
+
+  /// Creates a stub for JSON response loaded from a file (asynchronous)
+  ///
+  /// Example:
+  /// ```dart
+  /// await Joker.stubJsonFile(
+  ///   host: 'api.example.com',
+  ///   path: '/users',
+  ///   filePath: 'test/fixtures/users.json',
+  /// );
+  /// ```
+  static Future<JokerStub> stubJsonFile({
+    String? host,
+    String? path,
+    String? method,
+    required String filePath,
+    int statusCode = 200,
+    Map<String, String> headers = const {},
+    Duration? delay,
+    String? name,
+    bool removeAfterUse = false,
+  }) async {
+    final response = await JokerResponse.jsonFile(
+      filePath,
       statusCode: statusCode,
       headers: headers,
       delay: delay,

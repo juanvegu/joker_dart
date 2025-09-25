@@ -78,7 +78,7 @@ class JokerResponse {
   }
 
   /// Creates a successful response with text body
-  ///
+  /// 
   /// Example:
   /// ```dart
   /// final response = JokerResponse.text('Hello, World!');
@@ -102,13 +102,13 @@ class JokerResponse {
   }
 
   /// Creates an error response
-  ///
+  /// 
   /// Example:
   /// ```dart
-  /// final response = JokerResponse.error(statusCode: 404, message: 'Not Found');
+  /// final response = JokerResponse.error(404, message: 'Not Found');
   /// ```
-  factory JokerResponse.error({
-    int statusCode = 400,
+  factory JokerResponse.error(
+    int statusCode, {
     Map<String, String> headers = const {},
     String? message,
     Duration? delay,
