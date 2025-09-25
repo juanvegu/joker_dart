@@ -97,9 +97,23 @@ group('User Profile Tests', () {
 
 ## Installation
 
+### Native Platforms (Mobile & Desktop)
+
 ```yaml
 dev_dependencies:
-  joker: ^0.1.0
+  joker: ^0.1.0-dev.1
+```
+
+### Web Platform
+
+For web support, you also need a specific adapter:
+
+```yaml
+dev_dependencies:
+  joker: ^0.1.0-dev.1
+  joker_http: ^0.1.0-dev.1  # If using package:http
+  # OR
+  joker_dio: ^0.1.0-dev.1   # If using package:dio
 ```
 
 ## Quick Start
@@ -318,7 +332,9 @@ void setupMocksForDemo() {
 
 ## How It Works
 
-Joker uses Dart's `HttpOverrides.global` to intercept all HTTP requests made through `HttpClient`. This means it works transparently with any package that uses the standard Dart HTTP stack, including:
+### On Native Platforms (Mobile & Desktop)
+
+Joker uses Dart's `HttpOverrides.global` to intercept all HTTP requests made through `HttpClient`. This works transparently with any package that uses the standard Dart HTTP stack:
 
 - `package:http`
 - `package:dio`
@@ -326,6 +342,15 @@ Joker uses Dart's `HttpOverrides.global` to intercept all HTTP requests made thr
 - Most other HTTP packages
 
 No changes to your existing code required - just start Joker and define your stubs!
+
+### On Web Platform
+
+On web, `HttpOverrides` doesn't work because browsers handle HTTP requests differently. That's why we provide specific adapters:
+
+- `joker_http` - Intercepts requests made through `package:http`
+- `joker_dio` - Intercepts requests made through `package:dio`
+
+These adapters integrate seamlessly with each HTTP client's architecture to provide the same mocking experience across all platforms.
 
 ## License
 
