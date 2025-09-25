@@ -77,6 +77,50 @@ class JokerResponse {
     }
   }
 
+  /// Creates a successful response with text body
+  ///
+  /// Example:
+  /// ```dart
+  /// final response = JokerResponse.text('Hello, World!');
+  /// ```
+  factory JokerResponse.text(
+    String text, {
+    int statusCode = 200,
+    Map<String, String> headers = const {},
+    Duration? delay,
+  }) {
+    final textHeaders = {
+      'content-type': 'text/plain; charset=utf-8',
+      ...headers,
+    };
+    return JokerResponse(
+      statusCode: statusCode,
+      headers: textHeaders,
+      body: text,
+      delay: delay,
+    );
+  }
+
+  /// Creates an error response
+  ///
+  /// Example:
+  /// ```dart
+  /// final response = JokerResponse.error(statusCode: 404, message: 'Not Found');
+  /// ```
+  factory JokerResponse.error({
+    int statusCode = 400,
+    Map<String, String> headers = const {},
+    String? message,
+    Duration? delay,
+  }) {
+    return JokerResponse(
+      statusCode: statusCode,
+      headers: headers,
+      body: message,
+      delay: delay,
+    );
+  }
+
   /// Converts the body to bytes for HTTP response
   Uint8List get bytes {
     if (body is Uint8List) return body as Uint8List;
