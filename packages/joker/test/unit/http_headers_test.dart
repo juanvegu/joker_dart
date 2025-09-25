@@ -2,7 +2,6 @@
 import 'dart:io';
 import 'package:test/test.dart';
 import 'package:joker/joker.dart';
-import 'package:joker/src/joker_response.dart';
 import 'package:joker/src/http_client/http_headers.dart';
 
 void main() {
@@ -117,18 +116,16 @@ void main() {
     test('should exercise headers through HTTP requests', () async {
       Joker.start();
 
-      Joker.stubUrl(
+      Joker.stubJson(
         host: 'api.test.com',
         path: '/headers-integration',
         method: 'POST',
-        response: JokerResponse(
-          statusCode: 200,
-          headers: {
-            'content-type': 'application/json',
-            'x-custom': 'response-value',
-          },
-          body: '{"success": true}',
-        ),
+        data: {"success": true},
+        statusCode: 200,
+        headers: {
+          'content-type': 'application/json',
+          'x-custom': 'response-value',
+        },
       );
 
       final client = HttpClient();

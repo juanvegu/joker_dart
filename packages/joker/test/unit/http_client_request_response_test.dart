@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:test/test.dart';
 import 'package:joker/joker.dart';
-import 'package:joker/src/joker_response.dart';
 
 void main() {
   group('HttpClientRequest and HttpClientResponse Coverage', () {
@@ -22,11 +21,11 @@ void main() {
       Joker.start();
 
       // Setup a stub that can capture the request body
-      Joker.stubUrl(
+      Joker.stubJson(
         host: 'api.test.com',
         path: '/body-test',
         method: 'POST',
-        response: JokerResponse.json({'received': 'ok'}),
+        data: {'received': 'ok'},
       );
 
       final client = HttpClient();
@@ -61,11 +60,12 @@ void main() {
     test('should exercise request properties and headers', () async {
       Joker.start();
 
-      Joker.stubUrl(
+      Joker.stubText(
         host: 'api.test.com',
         path: '/headers-test',
         method: 'PUT',
-        response: JokerResponse(statusCode: 204),
+        text: '',
+        statusCode: 204,
       );
 
       final client = HttpClient();
@@ -100,11 +100,11 @@ void main() {
     test('should handle write methods with various input types', () async {
       Joker.start();
 
-      Joker.stubUrl(
+      Joker.stubJson(
         host: 'api.test.com',
         path: '/write-test',
         method: 'POST',
-        response: JokerResponse.json({'status': 'received'}),
+        data: {'status': 'received'},
       );
 
       final client = HttpClient();
@@ -142,15 +142,13 @@ void main() {
         'x-custom': 'response-header',
       };
 
-      Joker.stubUrl(
+      Joker.stubJson(
         host: 'api.test.com',
         path: '/response-test',
         method: 'GET',
-        response: JokerResponse(
-          statusCode: 201,
-          headers: responseHeaders,
-          body: '{"message": "success"}',
-        ),
+        data: {"message": "success"},
+        statusCode: 201,
+        headers: responseHeaders,
       );
 
       final client = HttpClient();
@@ -186,25 +184,21 @@ void main() {
 
       // Test with Uint8List body
       final binaryData = Uint8List.fromList([1, 2, 3, 4, 5]);
-      Joker.stubUrl(
+      Joker.stubText(
         host: 'api.test.com',
         path: '/binary',
-        response: JokerResponse(body: binaryData),
+        text: String.fromCharCodes(binaryData),
       );
 
       // Test with List<int> body
-      Joker.stubUrl(
+      Joker.stubText(
         host: 'api.test.com',
         path: '/list-int',
-        response: JokerResponse(body: [65, 66, 67]), // ABC
+        text: String.fromCharCodes([65, 66, 67]), // ABC
       );
 
       // Test with null body
-      Joker.stubUrl(
-        host: 'api.test.com',
-        path: '/null-body',
-        response: JokerResponse(body: null),
-      );
+      Joker.stubText(host: 'api.test.com', path: '/null-body', text: '');
 
       final client = HttpClient();
 
@@ -247,10 +241,10 @@ void main() {
     test('should exercise noSuchMethod in request', () async {
       Joker.start();
 
-      Joker.stubUrl(
+      Joker.stubJson(
         host: 'api.test.com',
         path: '/no-such-method',
-        response: JokerResponse.json({'ok': true}),
+        data: {'ok': true},
       );
 
       final client = HttpClient();

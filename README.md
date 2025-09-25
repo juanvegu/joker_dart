@@ -5,84 +5,104 @@
 [![ci](https://github.com/juanvegu/joker_dart/actions/workflows/ci.yaml/badge.svg)](https://github.com/juanvegu/joker_dart/actions/workflows/ci.yaml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A powerful and unified HTTP mocking ecosystem for Dart & Flutter tests, inspired by `OHHTTPStubs`.
+**Develop faster, test smarter.** HTTP mocking that empowers both independent frontend development and reliable testing.
 
-Joker provides a single, fluent, and consistent API to stub network requests, making your tests clean, fast, and reliable. It's designed from the ground up to work with popular clients like `http` and `dio` across all platforms (mobile, desktop, and web).
+## Why Joker?
 
----
+🚀 **Accelerate Development** - Build frontend features before backend APIs are ready  
+🧪 **Reliable Testing** - Consistent, controlled API responses for all test scenarios  
+🎯 **Zero Configuration** - Intercepts any HTTP client using Dart's `HttpClient`  
+📱 **Cross-Platform** - Works seamlessly on mobile, desktop, and web  
 
-## ✨ Features
+## Quick Example
 
-* **Unified API:** Learn one API, mock everything. Use the same `Joker.when(...)` syntax to mock both `http` and `dio` requests.
-* **Non-Invasive on Native:** Thanks to Dart's `HttpOverrides`, Joker can automatically intercept all network traffic on mobile and desktop without any changes to your application code.
-* **Cross-Platform Ready:** A first-class, consistent testing experience whether you're running tests on the Dart VM (IO) or in the browser (Web).
-* **Fluent & Expressive:** A declarative API that makes your test stubs easy to write and understand.
-* **Extensible Ecosystem:** Built as a modular platform, ready for future adapters to support other clients.
+```dart
+import 'package:joker/joker.dart';
 
----
+// Start intercepting HTTP requests
+Joker.start();
+
+// Define API responses  
+Joker.stubJson(
+  host: 'api.myapp.com',
+  path: '/users/me',
+  data: {'id': 1, 'name': 'John', 'role': 'developer'},
+);
+
+// Your app works without a backend!
+final user = await apiClient.getCurrentUser();
+print(user.name); // "John"
+
+// Clean up
+Joker.stop();
+```
+
+## Use Cases
+
+### 🚀 Independent Development
+
+- Build complete features without backend dependencies
+- Work offline or with unreliable connections  
+- Create demos and prototypes with realistic data
+- Onboard new developers faster
+
+### 🧪 Testing Excellence
+
+- Unit tests with predictable responses
+- Integration tests without external dependencies
+- Error scenario testing (404s, timeouts, etc.)
+- Performance testing with controlled delays
 
 ## 📦 Packages
 
-This monorepo contains the full Joker ecosystem. All packages are managed with [Melos](https://melos.invertase.dev).
+| Package | Pub.dev | Status | Description |
+|---------|---------|--------|-------------|
+| **[joker](packages/joker)** | [![pub](https://img.shields.io/pub/v/joker.svg)](https://pub.dev/packages/joker) | ✅ Available | Core library with `HttpOverrides` magic (works on native platforms) |
+| **[joker_http](packages/joker_http)** | 🚧 Coming Soon | 🚧 In Development | Web adapter for `package:http` |
+| **[joker_dio](packages/joker_dio)** | 🚧 Coming Soon | 🚧 In Development | Web adapter for `package:dio` |
 
-| Package | Pub.dev | Description |
-| :--- | :--- | :--- |
-| **`joker`** | [![pub package](https://img.shields.io/pub/v/joker.svg)](https://pub.dev/packages/joker) | The core package. Contains the public API and the non-invasive `HttpOverrides` magic for native platforms. |
-| **`joker_http`** | [![pub package](https://img.shields.io/pub/v/joker_http.svg)](https://pub.dev/packages/joker_http) | Adapter to provide mocking support for the `package:http`. |
-| **`joker_dio`** | [![pub package](https://img.shields.io/pub/v/joker_dio.svg)](https://pub.dev/packages/joker_dio) | Adapter to provide mocking support for the `package:dio`. |
+## Getting Started
 
----
+Choose based on your platform and HTTP client:
 
-## 🚀 Getting Started (for Contributors)
+### ✅ Native Platforms (Mobile & Desktop) - Available Now
 
-Interested in contributing? Welcome! Here's how to set up your development environment.
+- **Any HTTP client using `HttpClient`** → Use `joker` only
+- Works automatically with `http`, `dio`, and most HTTP packages via `HttpOverrides`
 
-### Prerequisites
+### 🚧 Web Platform - Coming Soon
 
-* Flutter SDK installed.
-* Dart CLI installed.
+- **Using `package:http`** → Will use `joker` + `joker_http` (in development)
+- **Using `package:dio`** → Will use `joker` + `joker_dio` (in development)
+- Web requires specific adapters since `HttpOverrides` doesn't work in browsers
 
-### 1. Clone the Repository
+Check the individual package documentation for detailed setup instructions.
 
-```bash
-git clone https://github.com/juanvegu/joker_dart.git
-cd joker_dart
-```
+## Development
 
-### 2. Install Melos
-
-Activate Melos, the tool we use to manage this monorepo.
+This monorepo uses [Melos](https://melos.invertase.dev) for package management.
 
 ```bash
+# Setup workspace
 dart pub global activate melos
-```
-
-### 3. Bootstrap the Workspace
-
-This command will install all dependencies for all packages and link them together locally.
-
-```bash
 melos bootstrap
+
+# Run all tests
+melos run test
+
+# Run tests for specific package
+melos run test --scope="joker"
 ```
 
-### 4. Run Tests
+## Contributing
 
-You can run all tests across the entire ecosystem with a single command:
+We welcome contributions! Please:
 
-```bash
-melos run test 
-```
+1. Read our [contributing guide](CONTRIBUTING.md)
+2. Check existing [issues](https://github.com/juanvegu/joker_dart/issues)
+3. Open an issue before major changes
+4. Follow our coding standards
 
----
+## License
 
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/juanvegu/joker_dart/issues).
-
-Please read our [contributing guide](CONTRIBUTING.md) to learn about our development process.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT Licensed - see [LICENSE](LICENSE) for details.

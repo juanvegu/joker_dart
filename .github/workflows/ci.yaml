@@ -55,8 +55,6 @@ jobs:
 
       - name: Filter coverage report
         run: |
-          # Usamos el comando lcov para remover las entradas no deseadas.
-          # Eliminamos los archivos del .pub-cache y los propios archivos de test.
           lcov --remove coverage/lcov.info '*/.pub-cache/*' '*/test/*' -o coverage/lcov_filtered.info
 
       - name: Check coverage with Very Good Coverage
@@ -70,37 +68,31 @@ jobs:
         run: |
           COMMIT_SHA=$(git rev-parse --short HEAD)
           
-          # Empezamos a construir el cuerpo del comentario.
           SUMMARY_BODY="### 📊 Code Coverage for commit \`$COMMIT_SHA\`\n\n"
           SUMMARY_BODY+="| Package | Lines Coverage |\n"
           SUMMARY_BODY+="| :--- | :--- |\n"
 
-          # Buscamos todos los paquetes en el workspace
           PACKAGES=$(find packages -name "pubspec.yaml" -exec dirname {} \;)
           
           for PKG_PATH in $PACKAGES
           do
             PKG_NAME=$(basename $PKG_PATH)
             
-            # Extraemos los datos de cobertura para este paquete
             lcov --extract "coverage/lcov_filtered.info" "*/$PKG_NAME/*" --output "coverage/${PKG_NAME}_coverage.info"
             
             if [ -s "coverage/${PKG_NAME}_coverage.info" ]; then
-              # Obtenemos solo el resumen de LÍNEAS
               PKG_SUMMARY=$(lcov --summary "coverage/${PKG_NAME}_coverage.info")
-              LINES=$(echo "$PKG_SUMMARY" | grep "lines......:" | awk '{print $2, $3}')
+              LINES=$(echo "$PKG_SUMMARY" | grep "lines......:" | awk '{print $2, $3, $4, $5, $6}')
               SUMMARY_BODY+="| **$PKG_NAME** | \`$LINES\` |\n"
             else
               SUMMARY_BODY+="| **$PKG_NAME** | `No tests found` |\n"
             fi
           done
 
-          # Calculamos el total general de LÍNEAS y lo añadimos al final.
-          OVERALL_LINES_COVERAGE=$(lcov --summary coverage/lcov_filtered.info | grep "lines......:" | awk '{print $2, $3}')
+          OVERALL_LINES_COVERAGE=$(lcov --summary coverage/lcov_filtered.info | grep "lines......:" | awk '{print $2, $3, $4, $5, $6}')
           SUMMARY_BODY+="\n---\n"
           SUMMARY_BODY+="**Total Coverage:** \`$OVERALL_LINES_COVERAGE\`"
           
-          # Pasamos el resultado final al siguiente paso
           echo "summary<<EOF" >> $GITHUB_OUTPUT
           echo -e "$SUMMARY_BODY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
