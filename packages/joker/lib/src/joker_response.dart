@@ -101,26 +101,6 @@ class JokerResponse {
     );
   }
 
-  /// Creates an error response
-  /// 
-  /// Example:
-  /// ```dart
-  /// final response = JokerResponse.error(404, message: 'Not Found');
-  /// ```
-  factory JokerResponse.error(
-    int statusCode, {
-    Map<String, String> headers = const {},
-    String? message,
-    Duration? delay,
-  }) {
-    return JokerResponse(
-      statusCode: statusCode,
-      headers: headers,
-      body: message,
-      delay: delay,
-    );
-  }
-
   /// Converts the body to bytes for HTTP response
   Uint8List get bytes {
     if (body is Uint8List) return body as Uint8List;

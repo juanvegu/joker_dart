@@ -5,7 +5,6 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:test/test.dart';
 import 'package:joker/joker.dart';
-import 'package:joker/src/joker_response.dart';
 
 void main() {
   group('JokerHttpClientResponse Coverage', () {
@@ -39,13 +38,11 @@ void main() {
 
       for (final statusCode in statusCodes) {
         Joker.clearStubs();
-        Joker.stubUrl(
+        Joker.stubText(
           host: 'api.test.com',
           path: '/status-$statusCode',
-          response: JokerResponse(
-            statusCode: statusCode,
-            body: 'Status $statusCode response',
-          ),
+          text: 'Status $statusCode response',
+          statusCode: statusCode,
         );
 
         final request = await client.getUrl(
@@ -69,14 +66,12 @@ void main() {
         'X-Custom-Header': 'custom-value',
       };
 
-      Joker.stubUrl(
+      Joker.stubText(
         host: 'api.test.com',
         path: '/headers-test',
-        response: JokerResponse(
-          statusCode: 200,
-          headers: responseHeaders,
-          body: 'headers test',
-        ),
+        text: 'headers test',
+        statusCode: 200,
+        headers: responseHeaders,
       );
 
       final client = HttpClient();
@@ -115,10 +110,10 @@ void main() {
         final testCase = testCases[i];
         Joker.clearStubs();
 
-        Joker.stubUrl(
+        Joker.stubText(
           host: 'api.test.com',
           path: '/length-$i',
-          response: JokerResponse(body: testCase['body']),
+          text: testCase['body'] as String,
         );
 
         final request = await client.getUrl(
@@ -135,10 +130,10 @@ void main() {
     test('should test response stream transformation', () async {
       Joker.start();
 
-      Joker.stubUrl(
+      Joker.stubText(
         host: 'api.test.com',
         path: '/transform-test',
-        response: JokerResponse(body: 'Transform this data'),
+        text: 'Transform this data',
       );
 
       final client = HttpClient();
@@ -165,10 +160,10 @@ void main() {
     test('should test join method', () async {
       Joker.start();
 
-      Joker.stubUrl(
+      Joker.stubText(
         host: 'api.test.com',
         path: '/join-test',
-        response: JokerResponse(body: 'Join test data'),
+        text: 'Join test data',
       );
 
       final client = HttpClient();
@@ -201,17 +196,17 @@ void main() {
           108,
           111,
         ]); // "Hello"
-        Joker.stubUrl(
+        Joker.stubText(
           host: 'api.test.com',
           path: '/binary-test',
-          response: JokerResponse(body: binaryData),
+          text: String.fromCharCodes(binaryData),
         );
 
         // Test with List<int> body
-        Joker.stubUrl(
+        Joker.stubText(
           host: 'api.test.com',
           path: '/list-test',
-          response: JokerResponse(body: [87, 111, 114, 108, 100]), // "World"
+          text: String.fromCharCodes([87, 111, 114, 108, 100]), // "World"
         );
 
         final client = HttpClient();
@@ -241,10 +236,10 @@ void main() {
     test('should test noSuchMethod for unsupported operations', () async {
       Joker.start();
 
-      Joker.stubUrl(
+      Joker.stubText(
         host: 'api.test.com',
         path: '/no-such-method',
-        response: JokerResponse(body: 'test'),
+        text: 'test',
       );
 
       final client = HttpClient();
@@ -274,10 +269,10 @@ void main() {
     test('should test stream listen with all parameters', () async {
       Joker.start();
 
-      Joker.stubUrl(
+      Joker.stubText(
         host: 'api.test.com',
         path: '/listen-test',
-        response: JokerResponse(body: 'Listen test data'),
+        text: 'Listen test data',
       );
 
       final client = HttpClient();

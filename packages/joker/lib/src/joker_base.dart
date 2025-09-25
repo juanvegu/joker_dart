@@ -41,29 +41,19 @@ class Joker {
     _isActive = false;
   }
 
-  /// Registers a new stub for HTTP request interception
+  /// Internal method to register a new stub for HTTP request interception
   ///
   /// The [stub] will be checked against incoming requests in the order they
   /// were added. The first matching stub will be used to generate the response.
   ///
   /// Returns the added stub for potential later removal.
-  static JokerStub addStub(JokerStub stub) {
+  static JokerStub _addStub(JokerStub stub) {
     _stubs.add(stub);
     return stub;
   }
 
-  /// Creates and registers a stub that matches specific URL patterns
-  ///
-  /// Example:
-  /// ```dart
-  /// Joker.stubUrl(
-  ///   host: 'api.example.com',
-  ///   path: '/users',
-  ///   method: 'GET',
-  ///   response: JokerResponse.json({'users': []}),
-  /// );
-  /// ```
-  static JokerStub stubUrl({
+  /// Internal helper method to create and register URL-based stubs
+  static JokerStub _stubUrl({
     String? host,
     String? path,
     String? method,
@@ -78,7 +68,7 @@ class Joker {
       name: name,
       removeAfterUse: removeAfterUse,
     );
-    return addStub(stub);
+    return _addStub(stub);
   }
 
   /// Convenience method for stubbing JSON responses
@@ -108,7 +98,7 @@ class Joker {
       headers: headers,
       delay: delay,
     );
-    return stubUrl(
+    return _stubUrl(
       host: host,
       path: path,
       method: method,
@@ -145,44 +135,7 @@ class Joker {
       headers: headers,
       delay: delay,
     );
-    return stubUrl(
-      host: host,
-      path: path,
-      method: method,
-      response: response,
-      name: name,
-      removeAfterUse: removeAfterUse,
-    );
-  }
-
-  /// Convenience method for stubbing error responses
-  ///
-  /// Example:
-  /// ```dart
-  /// Joker.stubError(
-  ///   host: 'api.example.com',
-  ///   statusCode: 404,
-  ///   message: 'Not Found',
-  /// );
-  /// ```
-  static JokerStub stubError({
-    String? host,
-    String? path,
-    String? method,
-    int statusCode = 500,
-    String? message,
-    Map<String, String> headers = const {},
-    Duration? delay,
-    String? name,
-    bool removeAfterUse = false,
-  }) {
-    final response = JokerResponse.error(
-      statusCode,
-      message: message,
-      headers: headers,
-      delay: delay,
-    );
-    return stubUrl(
+    return _stubUrl(
       host: host,
       path: path,
       method: method,
@@ -219,7 +172,7 @@ class Joker {
       headers: headers,
       delay: delay,
     );
-    return stubUrl(
+    return _stubUrl(
       host: host,
       path: path,
       method: method,
