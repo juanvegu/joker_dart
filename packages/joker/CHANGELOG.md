@@ -1,24 +1,9 @@
 # Changelog
 
-## 0.1.0-dev.3
+## 0.1.0
 
-### Changed
-
-- Updated `pubspec.yaml` files to set version to `0.1.0-dev.3` and added repository links.
-
-## 0.1.0-dev.2
-
-### Added
-
-- `stubJsonFile()` method for loading JSON files as stub responses
-- `stubText()` method for creating text-based stub responses
-- `JokerFileLoadException` exception for handling file loading errors
-
-### Changed
-
-- `_addStub()` and `_stubUrl()` methods are now private for internal library use
-- Public stub methods are now the recommended API for developers
-
-## 0.1.0-dev.1
-
-- Initial version with foundational features.
+- Initial release of the Joker library for HTTP request stubbing and mocking in Dart.
+- Intercept HTTP requests from any library using HttpOverrides.
+- Provides a simple and flexible API for defining request handlers and responses.
+- Supports various HTTP methods, headers, and body content types.
+- Includes utilities for verifying requests and managing mock server state.
