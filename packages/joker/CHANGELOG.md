@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-dev.3
+
+### Changed
+
+- Updated `pubspec.yaml` files to set version to `0.1.0-dev.3` and added repository links.
+
 ## 0.1.0-dev.2
 
 ### Added
