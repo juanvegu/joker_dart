@@ -1,9 +1,9 @@
 name: joker_http
 description: A starting point for Dart libraries or applications.
 version: 0.0.1
-homepage: https://github.com/juanvegu/joker_dart
-repository: https://github.com/juanvegu/joker_dart
 resolution: workspace
+homepage: https://github.com/juanvegu/joker_dart
+repository: https://github.com/juanvegu/joker_dart/tree/main/packages/joker_http
 
 environment:
   sdk: ^3.9.0
