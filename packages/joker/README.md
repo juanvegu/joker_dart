@@ -103,7 +103,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dev_dependencies:
-  joker: ^0.1.0-dev.2
+  joker: ^0.1.0
 ```
 
 ### 🚧 Web Platform - Coming Soon
@@ -112,7 +112,7 @@ Web adapters are currently in development:
 
 ```yaml
 dev_dependencies:
-  joker: ^0.1.0-dev.2
+  joker: ^0.1.0
   joker_http: ^0.0.1  # If using package:http (coming soon)
   # OR
   joker_dio: ^0.0.1   # If using package:dio (coming soon)
