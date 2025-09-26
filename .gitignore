@@ -1,2 +1,13 @@
 # MacOS
 .DS_Store
+
+# Flutter/Dart/Pub
+.dart_tool/
+.idea/
+build/
+.packages
+.pub/
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+coverage/
