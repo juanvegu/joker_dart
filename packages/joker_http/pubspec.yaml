@@ -11,3 +11,6 @@ environment:
 dev_dependencies:
   lints: ^6.0.0
   test: ^1.26.3
+
+funding:
+  - https://www.buymeacoffee.com/juanvegu
