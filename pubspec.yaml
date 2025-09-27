@@ -24,7 +24,7 @@ melos:
           - "*example*"
 
     test:
-      run: melos exec --concurrency=5 --fail-fast -- "flutter test --coverage=coverage"
+      run: melos exec --concurrency=5 --fail-fast -- "flutter test --coverage"
       description: Run tests for all packages in the workspace
       packageFilters:
         ignore:
