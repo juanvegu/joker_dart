@@ -17,9 +17,7 @@ workspace:
 melos:
   scripts:
     analyze:
-      run: |
-        melos exec -c 5 --ignore="*example*" -- \
-          dart analyze --fatal-infos .
+      run: melos exec -- dart analyze
       description: Analyze all packages in the workspace
 
     test:
@@ -33,9 +31,6 @@ melos:
   command:
     version:
       conventionalCommits: true
-
-  ignore:
-    - packages/**/example/**
 
 funding:
   - https://www.buymeacoffee.com/juanvegu
