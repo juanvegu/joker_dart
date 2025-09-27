@@ -60,7 +60,31 @@ jobs:
 
       - name: Filter coverage report
         run: |
-          lcov --remove coverage/lcov.info '*/.pub-cache/*' '*/test/*' -o coverage/lcov_filtered.info
+          echo "📋 Checking what files are in the coverage report:"
+          lcov --list coverage/lcov.info | head -20
+          echo ""
+
+          # Start with the original file
+          cp coverage/lcov.info coverage/lcov_filtered.info
+
+          # Remove test files if they exist
+          if lcov --list coverage/lcov.info | grep -q "/test/"; then
+            echo "🧹 Removing test files from coverage..."
+            lcov --remove coverage/lcov_filtered.info '*/test/*' -o coverage/lcov_filtered.info --ignore-errors unused
+          else
+            echo "ℹ️ No test files found in coverage report"
+          fi
+
+          # Remove .pub-cache files if they exist
+          if lcov --list coverage/lcov.info | grep -q "/.pub-cache/"; then
+            echo "🧹 Removing .pub-cache files from coverage..."
+            lcov --remove coverage/lcov_filtered.info '*/.pub-cache/*' -o coverage/lcov_filtered.info --ignore-errors unused
+          else
+            echo "ℹ️ No .pub-cache files found in coverage report"
+          fi
+
+          echo "✅ Final coverage summary:"
+          lcov --summary coverage/lcov_filtered.info
 
       - name: Check coverage with Very Good Coverage
         uses: VeryGoodOpenSource/very_good_coverage@v3.0.0
