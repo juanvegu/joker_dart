@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:joker_http_native_example/models.dart';
 import 'package:joker_http_native_example/api_service.dart';
@@ -119,7 +120,7 @@ void main() {
             realUsers = await apiService.getUsers();
           } catch (e) {
             // Skip real API test if network is unavailable
-            print('Skipping real API test due to network error: $e');
+            debugPrint('Skipping real API test due to network error: $e');
           }
 
           // Test with Joker stubs
@@ -213,7 +214,7 @@ void main() {
           await apiService.getUsers().timeout(Duration(seconds: 5));
           realDuration = DateTime.now().difference(realStart);
         } catch (e) {
-          print(
+          debugPrint(
             'Skipping real API performance test due to timeout or network error',
           );
         }

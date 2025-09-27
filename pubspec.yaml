@@ -9,9 +9,6 @@ environment:
 dev_dependencies:
   melos: ^7.1.1
 
-ignore:
-  - packages/**/example/**
-
 workspace:
   - packages/joker
   - packages/joker_dio
@@ -20,7 +17,9 @@ workspace:
 melos:
   scripts:
     analyze:
-      run: melos exec -- dart analyze
+      run: |
+        melos exec -c 5 --ignore="*example*" -- \
+          dart analyze --fatal-infos .
       description: Analyze all packages in the workspace
 
     test:
@@ -34,6 +33,9 @@ melos:
   command:
     version:
       conventionalCommits: true
+
+  ignore:
+    - packages/**/example/**
 
 funding:
   - https://www.buymeacoffee.com/juanvegu
