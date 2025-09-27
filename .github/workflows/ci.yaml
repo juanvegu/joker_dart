@@ -106,8 +106,15 @@ jobs:
           for PKG_PATH in $PACKAGES
           do
             PKG_NAME=$(basename $PKG_PATH)
-
-            lcov --extract "coverage/lcov_filtered.info" "*/$PKG_NAME/*" --output "coverage/${PKG_NAME}_coverage.info"
+            
+            echo "📦 Extracting coverage for package: $PKG_NAME"
+            echo "🔍 Looking for pattern: packages/$PKG_NAME/*"
+            
+            # Debug: show what files are in the original coverage for this package
+            echo "Files in coverage that match this package:"
+            lcov --list "coverage/lcov_filtered.info" | grep "packages/$PKG_NAME/" || echo "No files found for $PKG_NAME"
+            
+            lcov --extract "coverage/lcov_filtered.info" "packages/$PKG_NAME/*" --output "coverage/${PKG_NAME}_coverage.info" --ignore-errors empty
             
             if [ -s "coverage/${PKG_NAME}_coverage.info" ]; then
               PKG_SUMMARY=$(lcov --summary "coverage/${PKG_NAME}_coverage.info")
