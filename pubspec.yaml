@@ -31,3 +31,6 @@ melos:
   command:
     version:
       conventionalCommits: true
+
+funding:
+  - https://www.buymeacoffee.com/juanvegu
