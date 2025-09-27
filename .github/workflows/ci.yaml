@@ -2,9 +2,9 @@ name: Joker CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   test:
@@ -12,15 +12,16 @@ jobs:
 
     permissions:
       pull-requests: write
-    
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-        
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1.7.1
+        uses: actions/checkout@v5.0.0
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2.21.0
         with:
-          sdk: stable
+          channel: stable
+      - run: flutter --version
 
       - name: Install lcov
         run: sudo apt-get update && sudo apt-get install lcov
@@ -29,7 +30,7 @@ jobs:
         run: |
           dart pub global activate melos
           dart pub global activate coverage
-      
+
       - name: Bootstrap project
         run: melos bootstrap
 
@@ -67,13 +68,13 @@ jobs:
         id: lcov_summary
         run: |
           COMMIT_SHA=$(git rev-parse --short HEAD)
-          
+
           SUMMARY_BODY="### 📊 Code Coverage for commit \`$COMMIT_SHA\`\n\n"
           SUMMARY_BODY+="| Package | Lines Coverage |\n"
           SUMMARY_BODY+="| :--- | :--- |\n"
 
           PACKAGES=$(find packages -name "pubspec.yaml" -exec dirname {} \;)
-          
+
           for PKG_PATH in $PACKAGES
           do
             PKG_NAME=$(basename $PKG_PATH)
@@ -92,7 +93,7 @@ jobs:
           OVERALL_LINES_COVERAGE=$(lcov --summary coverage/lcov_filtered.info | grep "lines......:" | awk '{print $2, $3, $4, $5, $6}')
           SUMMARY_BODY+="\n---\n"
           SUMMARY_BODY+="**Total Coverage:** \`$OVERALL_LINES_COVERAGE\`"
-          
+
           echo "summary<<EOF" >> $GITHUB_OUTPUT
           echo -e "$SUMMARY_BODY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
