@@ -66,6 +66,24 @@ class JokerHttpClientResponse implements HttpClientResponse {
   int get contentLength => _jokerResponse.bytes.length;
 
   @override
+  bool get isRedirect {
+    // HTTP redirect status codes are 3xx
+    return statusCode >= 300 && statusCode < 400;
+  }
+
+  @override
+  List<RedirectInfo> get redirects => <RedirectInfo>[];
+
+  @override
+  bool get persistentConnection => false;
+
+  @override
+  HttpConnectionInfo? get connectionInfo => null;
+
+  @override
+  X509Certificate? get certificate => null;
+
+  @override
   Stream<S> transform<S>(StreamTransformer<List<int>, S> streamTransformer) {
     final bytes = _jokerResponse.bytes
         .toList(); // Convert Uint8List to List<int>

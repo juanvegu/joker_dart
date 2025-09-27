@@ -11,15 +11,26 @@
 /// // Start intercepting requests
 /// Joker.start();
 ///
-/// // Stub a JSON response
+/// // Stub a JSON object response
 /// Joker.stubJson(
 ///   host: 'api.example.com',
-///   path: '/users',
-///   data: {'users': []},
+///   path: '/user/1',
+///   data: {'id': 1, 'name': 'John'},
 /// );
 ///
-/// // Make your HTTP request - it will be intercepted
-/// final response = await http.get(Uri.parse('https://api.example.com/users'));
+/// // Stub a JSON array response (common in REST APIs)
+/// Joker.stubJsonArray(
+///   host: 'api.example.com',
+///   path: '/posts',
+///   data: [
+///     {'id': 1, 'title': 'Post 1'},
+///     {'id': 2, 'title': 'Post 2'},
+///   ],
+/// );
+///
+/// // Make your HTTP requests - they will be intercepted
+/// final userResponse = await http.get(Uri.parse('https://api.example.com/user/1'));
+/// final postsResponse = await http.get(Uri.parse('https://api.example.com/posts'));
 ///
 /// // Stop intercepting when done
 /// Joker.stop();

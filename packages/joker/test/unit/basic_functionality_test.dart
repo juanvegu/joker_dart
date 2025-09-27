@@ -78,5 +78,47 @@ void main() {
         client.close();
       }
     });
+
+    test('should intercept requests with stubJsonArray', () async {
+      Joker.start();
+
+      final testData = [
+        {'id': 1, 'name': 'Post 1', 'body': 'Content 1'},
+        {'id': 2, 'name': 'Post 2', 'body': 'Content 2'},
+      ];
+
+      Joker.stubJsonArray(
+        host: 'api.test.com',
+        path: '/posts',
+        method: 'GET',
+        data: testData,
+      );
+
+      final client = HttpClient();
+      try {
+        final request = await client.getUrl(
+          Uri.parse('https://api.test.com/posts'),
+        );
+        final response = await request.close();
+        final body = await response.transform(SystemEncoding().decoder).join();
+
+        expect(response.statusCode, equals(200));
+        expect(
+          response.headers.contentType?.primaryType,
+          equals('application'),
+        );
+        expect(response.headers.contentType?.subType, equals('json'));
+
+        // Should return an array
+        expect(body, startsWith('['));
+        expect(body, endsWith(']'));
+        expect(body, contains('"id":1'));
+        expect(body, contains('"name":"Post 1"'));
+        expect(body, contains('"id":2'));
+        expect(body, contains('"name":"Post 2"'));
+      } finally {
+        client.close();
+      }
+    });
   });
 }

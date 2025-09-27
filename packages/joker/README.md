@@ -103,7 +103,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dev_dependencies:
-  joker: ^0.1.0-dev.2
+  joker: ^0.1.0
 ```
 
 ### 🚧 Web Platform - Coming Soon
@@ -112,7 +112,7 @@ Web adapters are currently in development:
 
 ```yaml
 dev_dependencies:
-  joker: ^0.1.0-dev.2
+  joker: ^0.1.0
   joker_http: ^0.0.1  # If using package:http (coming soon)
   # OR
   joker_dio: ^0.0.1   # If using package:dio (coming soon)
@@ -360,3 +360,11 @@ These adapters will integrate seamlessly with each HTTP client's architecture to
 ## License
 
 MIT Licensed - see [LICENSE](LICENSE) for details.
+
+## Support the Project
+
+If you find `joker` helpful for your projects and it has saved you time, consider supporting its development with a coffee!
+
+Every contribution is highly appreciated and motivates me to keep improving the library, adding new features, and providing support.
+
+[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://www.buymeacoffee.com/juanvegu)
