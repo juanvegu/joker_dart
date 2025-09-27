@@ -40,6 +40,17 @@ jobs:
       - name: Run tests with coverage
         run: melos run test
 
+      - name: List generated coverage files
+        run: |
+          echo "📁 Listing all generated coverage files:"
+          find packages -name "*.json" -path "*/coverage/*" | sort
+          echo ""
+          echo "📊 Coverage directories structure:"
+          find packages -type d -name "coverage" -exec ls -la {} \; -print
+          echo ""
+          echo "🔍 Specifically looking for test coverage JSON files:"
+          find packages -path '*/coverage/test/*_test.dart.vm.json' | sort || echo "No JSON coverage files found"
+
       - name: Convert JSON to LCOV and combine
         run: |
           mkdir -p coverage
