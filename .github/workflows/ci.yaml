@@ -65,7 +65,7 @@ jobs:
 
       - name: Filter coverage report
         run: |
-          lcov --remove coverage/lcov_combined.info '*/test/*' 'lib/**/*.g.dart' 'lib/**/*.freezed.dart' -o coverage/lcov_filtered.info
+          lcov --remove coverage/lcov_combined.info '*/.pub-cache/*' '*/test/*' -o coverage/lcov_filtered.info
 
       - name: Check coverage with Very Good Coverage
         uses: VeryGoodOpenSource/very_good_coverage@v3.0.0
