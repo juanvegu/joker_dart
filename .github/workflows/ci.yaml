@@ -45,13 +45,21 @@ jobs:
           mkdir -p coverage
           touch coverage/lcov.info
           JSON_FILES=$(find packages -path '*/coverage/test/*_test.dart.vm.json')
+          if [ -z "$JSON_FILES" ]; then
+            echo "⚠️ No coverage files found in any package"
+            exit 1
+          fi
           for FILE in $JSON_FILES
           do
             PACKAGE_NAME=$(echo $FILE | cut -d '/' -f 2)
             echo "Processing coverage for package: $PACKAGE_NAME from file: $FILE"
-            dart pub global run coverage:format_coverage --lcov --in=$FILE --out=coverage/temp_lcov.info --packages=.dart_tool/package_config.json
-            sed "s,^SF:lib,SF:packages/$PACKAGE_NAME/lib," "coverage/temp_lcov.info" >> coverage/lcov.info
-            rm coverage/temp_lcov.info
+            if dart pub global run coverage:format_coverage --lcov --in=$FILE --out=coverage/temp_lcov.info --packages=.dart_tool/package_config.json; then
+              sed "s,^SF:lib,SF:packages/$PACKAGE_NAME/lib," "coverage/temp_lcov.info" >> coverage/lcov.info
+              rm coverage/temp_lcov.info
+            else
+              echo "❌ Failed to process coverage for $PACKAGE_NAME"
+              exit 1
+            fi
           done
 
       - name: Filter coverage report
