@@ -101,7 +101,8 @@ jobs:
           SUMMARY_BODY+="| Package | Lines Coverage |\n"
           SUMMARY_BODY+="| :--- | :--- |\n"
 
-          PACKAGES=$(find packages -name "pubspec.yaml" -exec dirname {} \;)
+          # Only get top-level packages, not examples
+          PACKAGES=$(find packages -maxdepth 1 -type d -not -path packages)
 
           for PKG_PATH in $PACKAGES
           do
@@ -114,7 +115,7 @@ jobs:
             echo "Files in coverage that match this package:"
             lcov --list "coverage/lcov_filtered.info" | grep "packages/$PKG_NAME/" || echo "No files found for $PKG_NAME"
             
-            lcov --extract "coverage/lcov_filtered.info" "packages/$PKG_NAME/*" --output "coverage/${PKG_NAME}_coverage.info" --ignore-errors empty
+            lcov --extract "coverage/lcov_filtered.info" "packages/$PKG_NAME/*" --output "coverage/${PKG_NAME}_coverage.info" --ignore-errors empty,unused
             
             if [ -s "coverage/${PKG_NAME}_coverage.info" ]; then
               PKG_SUMMARY=$(lcov --summary "coverage/${PKG_NAME}_coverage.info")
