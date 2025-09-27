@@ -19,14 +19,23 @@ melos:
     analyze:
       run: melos exec -- dart analyze
       description: Analyze all packages in the workspace
+      packageFilters:
+        ignore:
+          - "*example*"
 
     test:
-      run: melos exec --concurrency=5 --fail-fast --ignore="*example*" -- "dart test --coverage=coverage"
+      run: melos exec --concurrency=5 --fail-fast -- "dart test --coverage=coverage"
       description: Run tests for all packages in the workspace
+      packageFilters:
+        ignore:
+          - "*example*"
 
     tests:no-coverage:
-      run: melos exec --concurrency=5 --fail-fast --ignore="*example*" -- "dart test"
+      run: melos exec --concurrency=5 --fail-fast -- "dart test"
       description: Run tests for all packages in the workspace without coverage
+      packageFilters:
+        ignore:
+          - "*example*"
 
   command:
     version:

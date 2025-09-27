@@ -56,7 +56,7 @@ jobs:
             PACKAGE_PATH=$(echo "$FILE" | grep -o -P 'packages/[^/]+')
             echo "--> Processing coverage for $PACKAGE_PATH from file: $FILE"
 
-            dart pub global run coverage:format_coverage --lcov --in="$FILE" --out=coverage/temp_lcov.info --packages=.dart_tool/package_config.json -r .
+            dart pub global run coverage:format_coverage --lcov --in="$FILE" --out=coverage/temp_lcov.info --packages=.dart_tool/package_config.json
 
             sed "s,^SF:lib,SF:$PACKAGE_PATH/lib," "coverage/temp_lcov.info" >> coverage/lcov_combined.info
           done
