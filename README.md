@@ -106,3 +106,11 @@ We welcome contributions! Please:
 ## License
 
 MIT Licensed - see [LICENSE](LICENSE) for details.
+
+## Support the Project
+
+If you find `joker` helpful for your projects and it has saved you time, consider supporting its development with a coffee!
+
+Every contribution is highly appreciated and motivates me to keep improving the library, adding new features, and providing support.
+
+[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://www.buymeacoffee.com/juanvegu)
