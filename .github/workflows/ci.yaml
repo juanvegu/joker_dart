@@ -23,7 +23,7 @@ jobs:
           sdk: stable
 
       - name: Install lcov
-        run: sudo apt-get update && sudo apt-get install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
 
       - name: Install tools
         run: |
@@ -39,38 +39,33 @@ jobs:
       - name: Run tests with coverage
         run: melos run test
 
-      - name: "DEBUG: Verify that coverage files were created"
+      - name: Collect, Convert, and Combine Coverage
+        id: collect_coverage
         run: |
-          echo "--> Searching for generated lcov.info files..."
-          find . -path '*/coverage/lcov.info'
-
-      - name: Convert JSON to LCOV and combine
-        run: |
+          set -ex
           mkdir -p coverage
-          touch coverage/lcov.info
-          JSON_FILES=$(find packages -path '*/coverage/test/*_test.dart.vm.json')
+          JSON_FILES=$(find packages -path '*/coverage/test/*.json')
+
+          if [ -z "$JSON_FILES" ]; then
+            echo "::error::No coverage JSON files found. The test command might have failed or did not generate coverage."
+            exit 1
+          fi
+
           for FILE in $JSON_FILES
           do
-            PACKAGE_NAME=$(echo $FILE | cut -d '/' -f 2)
-            echo "Processing coverage for package: $PACKAGE_NAME from file: $FILE"
-            dart pub global run coverage:format_coverage --lcov --in=$FILE --out=coverage/temp_lcov.info --packages=.dart_tool/package_config.json
-            sed "s,^SF:lib,SF:packages/$PACKAGE_NAME/lib," "coverage/temp_lcov.info" >> coverage/lcov.info
-            rm coverage/temp_lcov.info
+            PACKAGE_PATH=$(echo "$FILE" | grep -o -P 'packages/[^/]+')
+            echo "--> Processing coverage for $PACKAGE_PATH from file: $FILE"
+
+            dart pub global run coverage:format_coverage --lcov --in="$FILE" --out=coverage/temp_lcov.info --packages=.dart_tool/package_config.json -r .
+
+            sed "s,^SF:lib,SF:$PACKAGE_PATH/lib," "coverage/temp_lcov.info" >> coverage/lcov_combined.info
           done
 
-      - name: "DEBUG: Show combined (but not filtered) coverage file"
-        run: |
-          echo "--> Content of coverage/lcov_combined.info:"
-          cat coverage/lcov_combined.info
+          rm -f coverage/temp_lcov.info
 
       - name: Filter coverage report
         run: |
-          lcov --remove coverage/lcov.info '*/.pub-cache/*' '*/test/*' -o coverage/lcov_filtered.info
-
-      - name: "DEBUG: Show filtered coverage file"
-        run: |
-          echo "--> Content of coverage/lcov_filtered.info (this is the crucial one):"
-          cat coverage/lcov_filtered.info
+          lcov --remove coverage/lcov_combined.info '*/.pub-cache/*' '*/test/*' -o coverage/lcov_filtered.info
 
       - name: Check coverage with Very Good Coverage
         uses: VeryGoodOpenSource/very_good_coverage@v3.0.0
@@ -82,19 +77,13 @@ jobs:
         id: lcov_summary
         run: |
           COMMIT_SHA=$(git rev-parse --short HEAD)
-
-          SUMMARY_BODY="### 📊 Code Coverage for commit \`$COMMIT_SHA\`\n\n"
-          SUMMARY_BODY+="| Package | Lines Coverage |\n"
-          SUMMARY_BODY+="| :--- | :--- |\n"
-
-          PACKAGES=$(find packages -name "pubspec.yaml" -exec dirname {} \;)
+          SUMMARY_BODY="### 📊 Code Coverage for commit \`$COMMIT_SHA\`\n\n| Package | Lines Coverage |\n| :--- | :--- |\n"
+          PACKAGES=$(melos list --no-private --json | jq -r '.[] | select(.is_package) | .path')
 
           for PKG_PATH in $PACKAGES
           do
             PKG_NAME=$(basename $PKG_PATH)
-            
-            lcov --extract "coverage/lcov_filtered.info" "*/$PKG_NAME/*" --output "coverage/${PKG_NAME}_coverage.info"
-            
+            lcov --extract "coverage/lcov_filtered.info" "$PKG_PATH/*" --output "coverage/${PKG_NAME}_coverage.info"
             if [ -s "coverage/${PKG_NAME}_coverage.info" ]; then
               PKG_SUMMARY=$(lcov --summary "coverage/${PKG_NAME}_coverage.info")
               LINES=$(echo "$PKG_SUMMARY" | grep "lines......:" | awk '{print $2, $3, $4, $5, $6}')
@@ -105,8 +94,7 @@ jobs:
           done
 
           OVERALL_LINES_COVERAGE=$(lcov --summary coverage/lcov_filtered.info | grep "lines......:" | awk '{print $2, $3, $4, $5, $6}')
-          SUMMARY_BODY+="\n---\n"
-          SUMMARY_BODY+="**Total Coverage:** \`$OVERALL_LINES_COVERAGE\`"
+          SUMMARY_BODY+="\n---\n**Total Coverage:** \`$OVERALL_LINES_COVERAGE\`"
 
           echo "summary<<EOF" >> $GITHUB_OUTPUT
           echo -e "$SUMMARY_BODY" >> $GITHUB_OUTPUT
