@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'http_client/http_overrides.dart';
 import 'joker_response.dart';
@@ -96,6 +97,53 @@ class Joker {
       data,
       statusCode: statusCode,
       headers: headers,
+      delay: delay,
+    );
+    return _stubUrl(
+      host: host,
+      path: path,
+      method: method,
+      response: response,
+      name: name,
+      removeAfterUse: removeAfterUse,
+    );
+  }
+
+  /// Convenience method for stubbing JSON array responses
+  ///
+  /// This method handles the common case where REST APIs return arrays
+  /// at the root level (e.g., `[{...}, {...}]`) instead of wrapped objects.
+  ///
+  /// Example:
+  /// ```dart
+  /// Joker.stubJsonArray(
+  ///   host: 'api.example.com',
+  ///   path: '/posts',
+  ///   data: [
+  ///     {'id': 1, 'title': 'Post 1'},
+  ///     {'id': 2, 'title': 'Post 2'},
+  ///   ],
+  /// );
+  /// ```
+  static JokerStub stubJsonArray({
+    String? host,
+    String? path,
+    String? method,
+    required List<Map<String, dynamic>> data,
+    int statusCode = 200,
+    Map<String, String> headers = const {},
+    Duration? delay,
+    String? name,
+    bool removeAfterUse = false,
+  }) {
+    final jsonHeaders = {
+      'content-type': 'application/json; charset=utf-8',
+      ...headers,
+    };
+    final response = JokerResponse(
+      statusCode: statusCode,
+      headers: jsonHeaders,
+      body: jsonEncode(data),
       delay: delay,
     );
     return _stubUrl(
