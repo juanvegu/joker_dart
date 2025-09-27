@@ -39,6 +39,11 @@ jobs:
       - name: Run tests with coverage
         run: melos run test
 
+      - name: "DEBUG: Verify that coverage files were created"
+        run: |
+          echo "--> Searching for generated lcov.info files..."
+          find . -path '*/coverage/lcov.info'
+
       - name: Convert JSON to LCOV and combine
         run: |
           mkdir -p coverage
@@ -53,9 +58,19 @@ jobs:
             rm coverage/temp_lcov.info
           done
 
+      - name: "DEBUG: Show combined (but not filtered) coverage file"
+        run: |
+          echo "--> Content of coverage/lcov_combined.info:"
+          cat coverage/lcov_combined.info
+
       - name: Filter coverage report
         run: |
           lcov --remove coverage/lcov.info '*/.pub-cache/*' '*/test/*' -o coverage/lcov_filtered.info
+
+      - name: "DEBUG: Show filtered coverage file"
+        run: |
+          echo "--> Content of coverage/lcov_filtered.info (this is the crucial one):"
+          cat coverage/lcov_filtered.info
 
       - name: Check coverage with Very Good Coverage
         uses: VeryGoodOpenSource/very_good_coverage@v3.0.0
