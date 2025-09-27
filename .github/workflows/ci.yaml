@@ -40,38 +40,23 @@ jobs:
       - name: Run tests with coverage
         run: melos run test
 
-      - name: List generated coverage files
-        run: |
-          echo "📁 Listing all generated coverage files:"
-          find packages -name "*.json" -path "*/coverage/*" | sort
-          echo ""
-          echo "📊 Coverage directories structure:"
-          find packages -type d -name "coverage" -exec ls -la {} \; -print
-          echo ""
-          echo "🔍 Specifically looking for test coverage JSON files:"
-          find packages -path '*/coverage/test/*_test.dart.vm.json' | sort || echo "No JSON coverage files found"
-
-      - name: Convert JSON to LCOV and combine
+      - name: Combine LCOV files
         run: |
           mkdir -p coverage
           touch coverage/lcov.info
-          JSON_FILES=$(find packages -path '*/coverage/test/*_test.dart.vm.json')
-          if [ -z "$JSON_FILES" ]; then
-            echo "⚠️ No coverage files found in any package"
+          LCOV_FILES=$(find packages -name "lcov.info" -path "*/coverage/*")
+          if [ -z "$LCOV_FILES" ]; then
+            echo "⚠️ No LCOV coverage files found in any package"
             exit 1
           fi
-          for FILE in $JSON_FILES
+          for FILE in $LCOV_FILES
           do
             PACKAGE_NAME=$(echo $FILE | cut -d '/' -f 2)
             echo "Processing coverage for package: $PACKAGE_NAME from file: $FILE"
-            if dart pub global run coverage:format_coverage --lcov --in=$FILE --out=coverage/temp_lcov.info --packages=.dart_tool/package_config.json; then
-              sed "s,^SF:lib,SF:packages/$PACKAGE_NAME/lib," "coverage/temp_lcov.info" >> coverage/lcov.info
-              rm coverage/temp_lcov.info
-            else
-              echo "❌ Failed to process coverage for $PACKAGE_NAME"
-              exit 1
-            fi
+            # Adjust the source file paths to include the package name
+            sed "s,^SF:lib,SF:packages/$PACKAGE_NAME/lib," "$FILE" >> coverage/lcov.info
           done
+          echo "✅ Combined coverage from $(echo "$LCOV_FILES" | wc -l) packages"
 
       - name: Filter coverage report
         run: |
