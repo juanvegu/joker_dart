@@ -17,21 +17,21 @@ workspace:
 melos:
   scripts:
     analyze:
-      run: melos exec -- dart analyze
+      run: melos exec -- flutter analyze
       description: Analyze all packages in the workspace
       packageFilters:
         ignore:
           - "*example*"
 
     test:
-      run: melos exec --concurrency=5 --fail-fast -- "dart test --coverage=coverage"
+      run: melos exec --concurrency=5 --fail-fast -- "flutter test --coverage=coverage"
       description: Run tests for all packages in the workspace
       packageFilters:
         ignore:
           - "*example*"
 
     tests:no-coverage:
-      run: melos exec --concurrency=5 --fail-fast -- "dart test"
+      run: melos exec --concurrency=5 --fail-fast -- "flutter test"
       description: Run tests for all packages in the workspace without coverage
       packageFilters:
         ignore:
