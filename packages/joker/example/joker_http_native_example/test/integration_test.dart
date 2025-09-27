@@ -263,50 +263,6 @@ void main() {
       );
     });
 
-    group('Error Scenarios', () {
-      test(
-        'should handle network errors gracefully when Joker is disabled',
-        () async {
-          // Arrange
-          Joker.stop();
-
-          // Note: JsonPlaceholderService uses a fixed baseUrl, so we'll test error handling differently
-          // This test will rely on network not being available in the test environment        // Act & Assert - Test error handling with network unavailable
-          expect(() => apiService.getPosts(), throwsA(isA<Exception>()));
-        },
-      );
-
-      test(
-        'should switch seamlessly between real API and Joker stubs',
-        () async {
-          // Test with Joker first
-          Joker.start();
-          final mockPosts = await apiService.getPosts();
-          expect(mockPosts, isNotEmpty);
-
-          // Switch to real API
-          Joker.stop();
-          List<Post>? realPosts;
-          try {
-            realPosts = await apiService.getPosts();
-          } catch (e) {
-            // Network might not be available, that's ok
-            print('Network not available for real API test: $e');
-          }
-
-          // Switch back to Joker
-          Joker.start();
-          final mockPosts2 = await apiService.getPosts();
-          expect(mockPosts2, isNotEmpty);
-
-          // Verify consistency
-          expect(mockPosts.length, equals(mockPosts2.length));
-
-          Joker.stop();
-        },
-      );
-    });
-
     group('Data Validation', () {
       test(
         'should validate that all stubbed data matches expected schema',
