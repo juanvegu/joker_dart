@@ -3,6 +3,12 @@ import 'http_client_request.dart';
 
 /// Custom HttpClient that intercepts all requests for stubbing
 class JokerHttpClient implements HttpClient {
+  Duration _idleTimeout = const Duration(seconds: 15);
+  Duration _connectionTimeout = const Duration(seconds: 60);
+  int _maxConnectionsPerHost = 6;
+  bool _autoUncompress = true;
+  String? _userAgent;
+
   /// Creates a Joker HTTP client
   JokerHttpClient();
 
@@ -85,6 +91,47 @@ class JokerHttpClient implements HttpClient {
   @override
   void close({bool force = false}) {
     // Nothing to close in test mode
+  }
+
+  // Common HttpClient properties that HTTP libraries like Dio need
+  @override
+  Duration get idleTimeout => _idleTimeout;
+
+  @override
+  set idleTimeout(Duration timeout) {
+    _idleTimeout = timeout;
+  }
+
+  @override
+  Duration? get connectionTimeout => _connectionTimeout;
+
+  @override
+  set connectionTimeout(Duration? timeout) {
+    _connectionTimeout = timeout ?? const Duration(seconds: 60);
+  }
+
+  @override
+  int? get maxConnectionsPerHost => _maxConnectionsPerHost;
+
+  @override
+  set maxConnectionsPerHost(int? count) {
+    _maxConnectionsPerHost = count ?? 6;
+  }
+
+  @override
+  bool get autoUncompress => _autoUncompress;
+
+  @override
+  set autoUncompress(bool enabled) {
+    _autoUncompress = enabled;
+  }
+
+  @override
+  String? get userAgent => _userAgent;
+
+  @override
+  set userAgent(String? agent) {
+    _userAgent = agent;
   }
 
   // Use noSuchMethod for all other unimplemented methods
