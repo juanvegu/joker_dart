@@ -144,15 +144,143 @@ final users = jsonDecode(response.body)['users'];
 Joker.stop();
 ```
 
-## API Guide
+## Complete API Reference
 
-### Basic Stubbing
+### Core Methods
+
+| Method | Purpose |
+|--------|---------|
+| `Joker.start()` | Begin intercepting HTTP requests |
+| `Joker.stop()` | Stop intercepting and clear all stubs |
+| `Joker.stubJson({...})` | Create JSON response stubs |
+| `Joker.stubJsonArray({...})` | Create JSON array response stubs |
+| `Joker.stubText({...})` | Create text response stubs |
+| `Joker.stubJsonFile({...})` | Create JSON stubs from file (async) |
+| `Joker.removeStub(stub)` | Remove specific stub |
+| `Joker.removeStubsByName(name)` | Remove stubs by name |
+| `Joker.clearStubs()` | Remove all stubs |
+| `Joker.stubs` | Get all registered stubs (read-only) |
+| `Joker.isActive` | Check if Joker is intercepting requests |
+
+### Stubbing Methods
+
+#### `stubJson()` - JSON Object Responses
+
+Creates stubs that return JSON objects:
+
+```dart
+Joker.stubJson(
+  host: 'api.example.com',
+  path: '/user/profile',
+  method: 'GET',
+  data: {
+    'id': 123,
+    'name': 'John Doe', 
+    'email': 'john@example.com'
+  },
+  statusCode: 200,
+  headers: {'x-api-version': '1.0'},
+  delay: Duration(milliseconds: 300),
+  name: 'user-profile',
+  removeAfterUse: false,
+);
+```
+
+#### `stubJsonArray()` - JSON Array Responses
+
+Creates stubs that return JSON arrays at root level:
+
+```dart
+Joker.stubJsonArray(
+  host: 'api.example.com',
+  path: '/posts',
+  data: [
+    {'id': 1, 'title': 'Post 1', 'author': 'Alice'},
+    {'id': 2, 'title': 'Post 2', 'author': 'Bob'},
+  ],
+  statusCode: 200,
+  headers: {'x-total-count': '2'},
+);
+```
+
+#### `stubText()` - Plain Text Responses
+
+Creates stubs that return plain text:
+
+```dart
+Joker.stubText(
+  host: 'api.example.com',
+  path: '/health',
+  text: 'OK',
+  statusCode: 200,
+  headers: {'content-type': 'text/plain'},
+);
+```
+
+#### `stubJsonFile()` - Load JSON from File
+
+Creates stubs by loading JSON data from files (async):
+
+```dart
+await Joker.stubJsonFile(
+  host: 'api.example.com',
+  path: '/users',
+  filePath: 'test/fixtures/users.json',
+  statusCode: 200,
+  delay: Duration(milliseconds: 500),
+);
+```
+
+### Common Parameters
+
+All stubbing methods share these parameters:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `host` | `String?` | `null` | Host to match (e.g., 'api.example.com') |
+| `path` | `String?` | `null` | Path to match (e.g., '/users') |
+| `method` | `String?` | `null` | HTTP method ('GET', 'POST', etc.) |
+| `statusCode` | `int` | `200` | HTTP status code |
+| `headers` | `Map<String, String>` | `{}` | Response headers |
+| `delay` | `Duration?` | `null` | Artificial response delay |
+| `name` | `String?` | `null` | Stub name for management |
+| `removeAfterUse` | `bool` | `false` | Auto-remove after first match |
+
+### Method-Specific Parameters
+
+#### `stubJson()` Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `data` | `Map<String, dynamic>` | ✅ | JSON object to return |
+
+#### `stubJsonArray()` Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `data` | `List<Map<String, dynamic>>` | ✅ | JSON array to return |
+
+#### `stubText()` Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `text` | `String` | ✅ | Plain text content to return |
+
+#### `stubJsonFile()` Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `filePath` | `String` | ✅ | Path to JSON file to load |
+
+### Stub Management Examples
+
+#### Basic Stubbing
 
 ```dart
 // Start intercepting
 Joker.start();
 
-// Stub a GET request
+// Simple JSON response
 Joker.stubJson(
   host: 'api.example.com',
   path: '/posts',
@@ -163,7 +291,7 @@ Joker.stubJson(
 final posts = await apiClient.getPosts();
 ```
 
-### Advanced Configuration
+#### Advanced Configuration
 
 ```dart
 // POST endpoint with custom response
@@ -186,11 +314,11 @@ Joker.stubJson(
 );
 ```
 
-### Stub Management
+#### Dynamic Stub Management
 
 ```dart
 // Named stubs for organization
-Joker.stubJson(
+final stub = Joker.stubJson(
   host: 'api.example.com',
   path: '/products',
   data: {'products': []},
@@ -213,6 +341,10 @@ Joker.stubJson(
   data: {'token': 'new_token_456'},
   removeAfterUse: true,
 );
+
+// Check active stubs
+print('Active stubs: ${Joker.stubs.length}');
+print('Joker is active: ${Joker.isActive}');
 ```
 
 ### Real-World Development Example
@@ -267,31 +399,6 @@ class ApiMockService {
   }
 }
 ```
-
-## Core Methods
-
-| Method | Purpose |
-|--------|---------|
-| `Joker.start()` | Begin intercepting HTTP requests |
-| `Joker.stop()` | Stop intercepting and clear all stubs |
-| `Joker.stubJson({...})` | Create a JSON response stub |
-| `Joker.clearStubs()` | Remove all stubs |
-| `Joker.removeStub(stub)` | Remove specific stub |
-| `Joker.removeStubsByName(name)` | Remove stubs by name |
-
-## `stubJson` Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `host` | `String?` | `null` | Host to match (e.g., 'api.example.com') |
-| `path` | `String?` | `null` | Path to match (e.g., '/users') |
-| `method` | `String?` | `null` | HTTP method ('GET', 'POST', etc.) |
-| `data` | `Map<String, dynamic>` | required | JSON data to return |
-| `statusCode` | `int` | `200` | HTTP status code |
-| `headers` | `Map<String, String>?` | `null` | Response headers |
-| `delay` | `Duration?` | `null` | Artificial delay |
-| `name` | `String?` | `null` | Stub name for management |
-| `removeAfterUse` | `bool` | `false` | Auto-remove after first match |
 
 ## Best Practices
 

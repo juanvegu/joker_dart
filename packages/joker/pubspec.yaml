@@ -1,6 +1,6 @@
 name: joker
 description: HTTP request stubbing and mocking library for Dart. Intercept HTTP requests from any library using HttpOverrides.
-version: 0.1.0
+version: 0.1.1
 resolution: workspace
 homepage: https://github.com/juanvegu/joker_dart
 repository: https://github.com/juanvegu/joker_dart/tree/main/packages/joker
