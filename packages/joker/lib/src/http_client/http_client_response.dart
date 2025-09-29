@@ -51,8 +51,7 @@ class JokerHttpClientResponse implements HttpClientResponse {
     void Function()? onDone,
     bool? cancelOnError,
   }) {
-    final bytes = _jokerResponse.bytes
-        .toList(); // Convert Uint8List to List<int>
+    final bytes = _jokerResponse.bytes.toList();
     final stream = Stream.fromIterable([bytes]);
     return stream.listen(
       onData,
@@ -85,10 +84,15 @@ class JokerHttpClientResponse implements HttpClientResponse {
 
   @override
   Stream<S> transform<S>(StreamTransformer<List<int>, S> streamTransformer) {
-    final bytes = _jokerResponse.bytes
-        .toList(); // Convert Uint8List to List<int>
+    final bytes = _jokerResponse.bytes.toList();
     final stream = Stream.fromIterable([bytes]);
     return stream.transform(streamTransformer);
+  }
+
+  @override
+  Stream<S> cast<S>() {
+    final stream = Stream.fromIterable([_jokerResponse.bytes]);
+    return stream.cast<S>();
   }
 
   @override

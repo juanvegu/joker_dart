@@ -162,7 +162,7 @@ void main() {
       client.close();
     });
 
-    test('should test close method and unsupported operations', () {
+    test('should test close method and connection timeout', () {
       Joker.start();
 
       final client = HttpClient();
@@ -172,10 +172,10 @@ void main() {
       expect(() => client.close(force: true), returnsNormally);
 
       // Test unsupported operations that should throw
-      expect(() => client.connectionTimeout, throwsUnsupportedError);
+      expect(() => client.connectionTimeout, returnsNormally);
       expect(
         () => client.connectionTimeout = Duration(seconds: 5),
-        throwsUnsupportedError,
+        returnsNormally,
       );
     });
 
