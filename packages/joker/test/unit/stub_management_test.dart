@@ -50,6 +50,43 @@ void main() {
         final removedCount2 = Joker.removeStubsByName('nonexistent');
         expect(removedCount2, equals(0)); // Should remove 0 stubs
       });
+
+      test('should remove specific stub with removeStub', () {
+        Joker.start();
+
+        // Add multiple stubs
+        final stub1 = Joker.stubJson(
+          host: 'api.test.com',
+          path: '/endpoint1',
+          name: 'stub1',
+          data: {'data': 1},
+        );
+
+        final stub2 = Joker.stubJson(
+          host: 'api.test.com',
+          path: '/endpoint2',
+          name: 'stub2',
+          data: {'data': 2},
+        );
+
+        // Should have 2 stubs
+        expect(Joker.stubs, hasLength(2));
+
+        // Remove specific stub
+        final removed = Joker.removeStub(stub1);
+        expect(removed, isTrue);
+        expect(Joker.stubs, hasLength(1));
+
+        // Try to remove the same stub again
+        final removedAgain = Joker.removeStub(stub1);
+        expect(removedAgain, isFalse);
+        expect(Joker.stubs, hasLength(1));
+
+        // Remove the other stub
+        final removed2 = Joker.removeStub(stub2);
+        expect(removed2, isTrue);
+        expect(Joker.stubs, isEmpty);
+      });
     });
 
     group('One-time Stubs', () {

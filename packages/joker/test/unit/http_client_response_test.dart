@@ -300,5 +300,174 @@ void main() {
 
       client.close();
     });
+
+    test('should test isRedirect property for various status codes', () async {
+      Joker.start();
+
+      final client = HttpClient();
+
+      // Test redirect status codes (3xx)
+      final redirectCodes = [300, 301, 302, 303, 304, 307, 308];
+      for (final code in redirectCodes) {
+        Joker.clearStubs();
+        Joker.stubText(
+          host: 'api.test.com',
+          path: '/redirect-$code',
+          text: 'redirect response',
+          statusCode: code,
+        );
+
+        final request = await client.getUrl(
+          Uri.parse('https://api.test.com/redirect-$code'),
+        );
+        final response = await request.close();
+
+        expect(
+          response.isRedirect,
+          isTrue,
+          reason: 'Status $code should be redirect',
+        );
+      }
+
+      // Test non-redirect status codes
+      final nonRedirectCodes = [200, 201, 400, 404, 500];
+      for (final code in nonRedirectCodes) {
+        Joker.clearStubs();
+        Joker.stubText(
+          host: 'api.test.com',
+          path: '/non-redirect-$code',
+          text: 'non-redirect response',
+          statusCode: code,
+        );
+
+        final request = await client.getUrl(
+          Uri.parse('https://api.test.com/non-redirect-$code'),
+        );
+        final response = await request.close();
+
+        expect(
+          response.isRedirect,
+          isFalse,
+          reason: 'Status $code should not be redirect',
+        );
+      }
+
+      client.close();
+    });
+
+    test('should test redirects property returns empty list', () async {
+      Joker.start();
+
+      Joker.stubText(
+        host: 'api.test.com',
+        path: '/redirects-test',
+        text: 'redirects test',
+        statusCode: 302,
+      );
+
+      final client = HttpClient();
+      final request = await client.getUrl(
+        Uri.parse('https://api.test.com/redirects-test'),
+      );
+      final response = await request.close();
+
+      expect(response.redirects, isEmpty);
+      expect(response.redirects, isA<List<RedirectInfo>>());
+
+      client.close();
+    });
+
+    test('should test persistentConnection property returns false', () async {
+      Joker.start();
+
+      Joker.stubText(
+        host: 'api.test.com',
+        path: '/persistent-test',
+        text: 'persistent test',
+      );
+
+      final client = HttpClient();
+      final request = await client.getUrl(
+        Uri.parse('https://api.test.com/persistent-test'),
+      );
+      final response = await request.close();
+
+      expect(response.persistentConnection, isFalse);
+
+      client.close();
+    });
+
+    test('should test connectionInfo property returns null', () async {
+      Joker.start();
+
+      Joker.stubText(
+        host: 'api.test.com',
+        path: '/connection-test',
+        text: 'connection test',
+      );
+
+      final client = HttpClient();
+      final request = await client.getUrl(
+        Uri.parse('https://api.test.com/connection-test'),
+      );
+      final response = await request.close();
+
+      expect(response.connectionInfo, isNull);
+
+      client.close();
+    });
+
+    test('should test certificate property returns null', () async {
+      Joker.start();
+
+      Joker.stubText(
+        host: 'api.test.com',
+        path: '/certificate-test',
+        text: 'certificate test',
+      );
+
+      final client = HttpClient();
+      final request = await client.getUrl(
+        Uri.parse('https://api.test.com/certificate-test'),
+      );
+      final response = await request.close();
+
+      expect(response.certificate, isNull);
+
+      client.close();
+    });
+
+    test('should test noSuchMethod with method invocations', () async {
+      Joker.start();
+
+      Joker.stubText(
+        host: 'api.test.com',
+        path: '/method-test',
+        text: 'method test',
+      );
+
+      final client = HttpClient();
+      final request = await client.getUrl(
+        Uri.parse('https://api.test.com/method-test'),
+      );
+      final response = await request.close();
+
+      // Test method invocation throws UnsupportedError
+      expect(
+        () => (response as dynamic).unknownMethod('arg1', 'arg2'),
+        throwsA(isA<UnsupportedError>()),
+      );
+
+      // Test that the error message is descriptive
+      try {
+        (response as dynamic).someMethodName();
+        fail('Expected UnsupportedError');
+      } catch (e) {
+        expect(e, isA<UnsupportedError>());
+        expect(e.toString(), contains('not supported in test mode'));
+      }
+
+      client.close();
+    });
   });
 }

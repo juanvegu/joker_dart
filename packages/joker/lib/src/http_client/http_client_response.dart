@@ -51,8 +51,7 @@ class JokerHttpClientResponse implements HttpClientResponse {
     void Function()? onDone,
     bool? cancelOnError,
   }) {
-    final bytes = _jokerResponse.bytes
-        .toList(); // Convert Uint8List to List<int>
+    final bytes = _jokerResponse.bytes.toList();
     final stream = Stream.fromIterable([bytes]);
     return stream.listen(
       onData,
@@ -66,11 +65,34 @@ class JokerHttpClientResponse implements HttpClientResponse {
   int get contentLength => _jokerResponse.bytes.length;
 
   @override
+  bool get isRedirect {
+    // HTTP redirect status codes are 3xx
+    return statusCode >= 300 && statusCode < 400;
+  }
+
+  @override
+  List<RedirectInfo> get redirects => <RedirectInfo>[];
+
+  @override
+  bool get persistentConnection => false;
+
+  @override
+  HttpConnectionInfo? get connectionInfo => null;
+
+  @override
+  X509Certificate? get certificate => null;
+
+  @override
   Stream<S> transform<S>(StreamTransformer<List<int>, S> streamTransformer) {
-    final bytes = _jokerResponse.bytes
-        .toList(); // Convert Uint8List to List<int>
+    final bytes = _jokerResponse.bytes.toList();
     final stream = Stream.fromIterable([bytes]);
     return stream.transform(streamTransformer);
+  }
+
+  @override
+  Stream<S> cast<S>() {
+    final stream = Stream.fromIterable([_jokerResponse.bytes]);
+    return stream.cast<S>();
   }
 
   @override

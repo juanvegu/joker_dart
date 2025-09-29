@@ -26,6 +26,40 @@ void main() {
       expect(Joker.stop, returnsNormally);
     });
 
+    test('should test stubs getter', () {
+      Joker.start();
+
+      // Initially should be empty
+      expect(Joker.stubs, isEmpty);
+
+      // Add some stubs
+      Joker.stubJson(host: 'test.com', path: '/test1', data: {'test': 1});
+      Joker.stubJson(host: 'test.com', path: '/test2', data: {'test': 2});
+
+      // Should return unmodifiable list with 2 stubs
+      final stubsList = Joker.stubs;
+      expect(stubsList, hasLength(2));
+
+      // Verify it's unmodifiable by trying to modify it
+      expect(() => stubsList.clear(), throwsUnsupportedError);
+
+      // Original list should still have stubs
+      expect(Joker.stubs, hasLength(2));
+    });
+
+    test('should test isActive getter', () {
+      // Initially should be false
+      expect(Joker.isActive, isFalse);
+
+      // After start should be true
+      Joker.start();
+      expect(Joker.isActive, isTrue);
+
+      // After stop should be false again
+      Joker.stop();
+      expect(Joker.isActive, isFalse);
+    });
+
     test('should clear all stubs', () {
       Joker.start();
 
@@ -74,6 +108,220 @@ void main() {
         expect(body, contains('"id":123'));
         expect(body, contains('"name":"Test User"'));
         expect(body, contains('"email":"test@example.com"'));
+      } finally {
+        client.close();
+      }
+    });
+
+    test('should intercept requests with stubJsonArray', () async {
+      Joker.start();
+
+      final testData = [
+        {'id': 1, 'name': 'Post 1', 'body': 'Content 1'},
+        {'id': 2, 'name': 'Post 2', 'body': 'Content 2'},
+      ];
+
+      Joker.stubJsonArray(
+        host: 'api.test.com',
+        path: '/posts',
+        method: 'GET',
+        data: testData,
+      );
+
+      final client = HttpClient();
+      try {
+        final request = await client.getUrl(
+          Uri.parse('https://api.test.com/posts'),
+        );
+        final response = await request.close();
+        final body = await response.transform(SystemEncoding().decoder).join();
+
+        expect(response.statusCode, equals(200));
+        expect(
+          response.headers.contentType?.primaryType,
+          equals('application'),
+        );
+        expect(response.headers.contentType?.subType, equals('json'));
+
+        // Should return an array
+        expect(body, startsWith('['));
+        expect(body, endsWith(']'));
+        expect(body, contains('"id":1'));
+        expect(body, contains('"name":"Post 1"'));
+        expect(body, contains('"id":2'));
+        expect(body, contains('"name":"Post 2"'));
+      } finally {
+        client.close();
+      }
+    });
+
+    test('should handle stubJsonArray with custom status code', () async {
+      Joker.start();
+
+      final testData = [
+        {'error': 'Bad Request', 'code': 400},
+      ];
+
+      Joker.stubJsonArray(
+        host: 'api.test.com',
+        path: '/error',
+        method: 'GET',
+        data: testData,
+        statusCode: 400,
+      );
+
+      final client = HttpClient();
+      try {
+        final request = await client.getUrl(
+          Uri.parse('https://api.test.com/error'),
+        );
+        final response = await request.close();
+        final body = await response.transform(SystemEncoding().decoder).join();
+
+        expect(response.statusCode, equals(400));
+        expect(body, startsWith('['));
+        expect(body, contains('"error":"Bad Request"'));
+      } finally {
+        client.close();
+      }
+    });
+
+    test('should handle stubJsonArray with custom headers', () async {
+      Joker.start();
+
+      final testData = [
+        {'message': 'Success'},
+      ];
+
+      Joker.stubJsonArray(
+        host: 'api.test.com',
+        path: '/custom',
+        method: 'GET',
+        data: testData,
+        headers: {'x-custom-header': 'custom-value', 'x-rate-limit': '100'},
+      );
+
+      final client = HttpClient();
+      try {
+        final request = await client.getUrl(
+          Uri.parse('https://api.test.com/custom'),
+        );
+        final response = await request.close();
+
+        expect(response.statusCode, equals(200));
+        expect(
+          response.headers.value('x-custom-header'),
+          equals('custom-value'),
+        );
+        expect(response.headers.value('x-rate-limit'), equals('100'));
+        expect(
+          response.headers.contentType?.primaryType,
+          equals('application'),
+        );
+      } finally {
+        client.close();
+      }
+    });
+
+    test('should handle stubJsonArray with empty array', () async {
+      Joker.start();
+
+      final testData = <Map<String, dynamic>>[];
+
+      Joker.stubJsonArray(
+        host: 'api.test.com',
+        path: '/empty',
+        method: 'GET',
+        data: testData,
+      );
+
+      final client = HttpClient();
+      try {
+        final request = await client.getUrl(
+          Uri.parse('https://api.test.com/empty'),
+        );
+        final response = await request.close();
+        final body = await response.transform(SystemEncoding().decoder).join();
+
+        expect(response.statusCode, equals(200));
+        expect(body, equals('[]'));
+        expect(
+          response.headers.contentType?.primaryType,
+          equals('application'),
+        );
+        expect(response.headers.contentType?.subType, equals('json'));
+      } finally {
+        client.close();
+      }
+    });
+
+    test('should handle stubJsonArray with delay', () async {
+      Joker.start();
+
+      final testData = [
+        {'delayed': true, 'message': 'This response was delayed'},
+      ];
+
+      final startTime = DateTime.now();
+
+      Joker.stubJsonArray(
+        host: 'api.test.com',
+        path: '/delayed',
+        method: 'GET',
+        data: testData,
+        delay: Duration(milliseconds: 100),
+      );
+
+      final client = HttpClient();
+      try {
+        final request = await client.getUrl(
+          Uri.parse('https://api.test.com/delayed'),
+        );
+        final response = await request.close();
+        final body = await response.transform(SystemEncoding().decoder).join();
+
+        final endTime = DateTime.now();
+        final elapsed = endTime.difference(startTime);
+
+        expect(response.statusCode, equals(200));
+        expect(body, contains('"delayed":true'));
+        expect(
+          elapsed.inMilliseconds,
+          greaterThanOrEqualTo(90),
+        ); // Allow for some variance
+      } finally {
+        client.close();
+      }
+    });
+
+    test('should handle stubJsonFile', () async {
+      Joker.start();
+
+      await Joker.stubJsonFile(
+        host: 'api.test.com',
+        path: '/users-from-file',
+        method: 'GET',
+        filePath: 'test/fixtures/test_users.json',
+      );
+
+      final client = HttpClient();
+      try {
+        final request = await client.getUrl(
+          Uri.parse('https://api.test.com/users-from-file'),
+        );
+        final response = await request.close();
+        final body = await response.transform(SystemEncoding().decoder).join();
+
+        expect(response.statusCode, equals(200));
+        expect(
+          response.headers.contentType?.primaryType,
+          equals('application'),
+        );
+        expect(response.headers.contentType?.subType, equals('json'));
+        expect(body, contains('"name":"John Doe"'));
+        expect(body, contains('"email":"john@example.com"'));
+        expect(body, contains('"name":"Jane Smith"'));
+        expect(body, contains('"total":2'));
       } finally {
         client.close();
       }
