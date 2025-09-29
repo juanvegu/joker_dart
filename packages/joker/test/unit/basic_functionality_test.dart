@@ -26,6 +26,40 @@ void main() {
       expect(Joker.stop, returnsNormally);
     });
 
+    test('should test stubs getter', () {
+      Joker.start();
+
+      // Initially should be empty
+      expect(Joker.stubs, isEmpty);
+
+      // Add some stubs
+      Joker.stubJson(host: 'test.com', path: '/test1', data: {'test': 1});
+      Joker.stubJson(host: 'test.com', path: '/test2', data: {'test': 2});
+
+      // Should return unmodifiable list with 2 stubs
+      final stubsList = Joker.stubs;
+      expect(stubsList, hasLength(2));
+
+      // Verify it's unmodifiable by trying to modify it
+      expect(() => stubsList.clear(), throwsUnsupportedError);
+
+      // Original list should still have stubs
+      expect(Joker.stubs, hasLength(2));
+    });
+
+    test('should test isActive getter', () {
+      // Initially should be false
+      expect(Joker.isActive, isFalse);
+
+      // After start should be true
+      Joker.start();
+      expect(Joker.isActive, isTrue);
+
+      // After stop should be false again
+      Joker.stop();
+      expect(Joker.isActive, isFalse);
+    });
+
     test('should clear all stubs', () {
       Joker.start();
 
@@ -255,6 +289,39 @@ void main() {
           elapsed.inMilliseconds,
           greaterThanOrEqualTo(90),
         ); // Allow for some variance
+      } finally {
+        client.close();
+      }
+    });
+
+    test('should handle stubJsonFile', () async {
+      Joker.start();
+
+      await Joker.stubJsonFile(
+        host: 'api.test.com',
+        path: '/users-from-file',
+        method: 'GET',
+        filePath: 'test/fixtures/test_users.json',
+      );
+
+      final client = HttpClient();
+      try {
+        final request = await client.getUrl(
+          Uri.parse('https://api.test.com/users-from-file'),
+        );
+        final response = await request.close();
+        final body = await response.transform(SystemEncoding().decoder).join();
+
+        expect(response.statusCode, equals(200));
+        expect(
+          response.headers.contentType?.primaryType,
+          equals('application'),
+        );
+        expect(response.headers.contentType?.subType, equals('json'));
+        expect(body, contains('"name":"John Doe"'));
+        expect(body, contains('"email":"john@example.com"'));
+        expect(body, contains('"name":"Jane Smith"'));
+        expect(body, contains('"total":2'));
       } finally {
         client.close();
       }
