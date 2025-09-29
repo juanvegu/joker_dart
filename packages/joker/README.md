@@ -474,4 +474,6 @@ If you find `joker` helpful for your projects and it has saved you time, conside
 
 Every contribution is highly appreciated and motivates me to keep improving the library, adding new features, and providing support.
 
-[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://www.buymeacoffee.com/juanvegu)
+<a href="https://www.buymeacoffee.com/juanvegu">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="40">
+</a>
