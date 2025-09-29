@@ -10,11 +10,17 @@ class PokemonStubConfig {
 
   /// Sets up all Pokemon-related stubs for the example app
   ///
-  /// This method should be called before making any API requests to ensure
-  /// that Joker intercepts the calls and returns the stubbed data.
+  /// This method ensures clean setup by stopping any previous Joker instance
+  /// and starting fresh with new stubs.
   static void setupStubs() {
-    // Start Joker interception
+    // Ensure clean state by stopping any previous instance
+    Joker.stop();
+
+    // Start fresh
     Joker.start();
+    print(
+      '🃏 Starting fresh Joker instance and registering Pokemon API stubs...',
+    );
 
     // Stub Pokemon list endpoint
     _setupPokemonListStubs();
@@ -24,6 +30,7 @@ class PokemonStubConfig {
 
     print('🃏 Joker: Pokemon API stubs configured successfully!');
     print('🃏 Total stubs registered: ${Joker.stubs.length}');
+    print('🃏 Joker.isActive: ${Joker.isActive}');
     print('🃏 All Pokemon data will be loaded from Joker stubs.');
 
     // Debug: Print all registered stubs
@@ -42,13 +49,14 @@ class PokemonStubConfig {
     Joker.stubJson(
       host: pokemonApiHost,
       path: '/api/v2/pokemon',
+      method: 'GET',
       name: 'pokemon-list-any',
       data: {
-        'count': 1302,
-        'next': 'https://pokeapi.co/api/v2/pokemon?offset=20&limit=20',
+        'count': 1300,
+        'next': 'https://pokeapi.co/api/v2/pokemon?limit=20&offset=0',
         'previous': null,
         'loaded_from_joker': true, // 🃏 Joker identifier
-        'results': _generatePokemonList(0, 20),
+        'results': _generatePokemonList(20, 40),
       },
     );
 
@@ -671,10 +679,9 @@ class PokemonStubConfig {
     };
   }
 
-  /// Clears all Pokemon stubs and stops Joker
+  /// Clears all Pokemon stubs (but keeps Joker running)
   static void clearStubs() {
     Joker.clearStubs();
-    Joker.stop();
-    print('🃏 Joker: All Pokemon stubs cleared and Joker stopped.');
+    print('🃏 Joker: All Pokemon stubs cleared.');
   }
 }

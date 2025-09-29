@@ -1,56 +1,101 @@
 import 'package:dio/dio.dart';
+import 'package:joker/joker.dart';
+import 'package:joker_dio_native_example/models/pokemon_list.dart';
 import '../models/pokemon.dart';
-import '../models/pokemon_list.dart';
+import '../config/pokemon_stubs.dart';
 
-/// Service class for interacting with the Pokemon API using Dio.
+/// Pokemon service that integrates Joker with Dio
 ///
-/// This is the base implementation using only Dio for HTTP calls.
-/// Joker integration will be added later once this works properly.
+/// This service can work in two modes:
+/// 1. Real API mode: Makes actual HTTP calls to PokeAPI
+/// 2. Joker mode: Returns stubbed responses when Joker is active
+///
+/// Stub configuration is handled by PokemonStubConfig, not by this service.
 class PokemonService {
-  late final Dio _dio;
+  late Dio _dio;
   static const String _baseUrl = 'https://pokeapi.co/api/v2';
 
-  /// Creates a new Pokemon service with a standard Dio client
   PokemonService() {
+    _initializeDio();
+  }
+
+  void _initializeDio() {
     _dio = Dio(
       BaseOptions(
         baseUrl: _baseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
-        sendTimeout: const Duration(seconds: 30),
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': 'Dio-Pokemon-Example/1.0',
+          'User-Agent': 'Joker-Dio-Pokemon/1.0',
         },
       ),
     );
 
-    // Add logging interceptor to debug requests
+    // Add logging interceptor for debugging
     _dio.interceptors.add(
       LogInterceptor(
-        requestBody: true,
-        responseBody: false,
+        requestBody: false,
+        responseBody: false, // Avoid large response logs
         requestHeader: true,
         responseHeader: false,
         error: true,
+        logPrint: (object) => print('🔧 HTTP: $object'),
       ),
     );
   }
 
-  /// Fetches a list of Pokemon from the API
-  ///
-  /// [limit] - Number of Pokemon to fetch (default: 20)
-  /// [offset] - Number of Pokemon to skip (default: 0)
-  ///
-  /// Returns a [PokemonListResponse] containing the list of Pokemon.
+  /// Recreate Dio instance to ensure clean state
+  void _recreateDio() {
+    print('🔄 Recreating Dio instance for clean state...');
+
+    // Dispose old instance
+    try {
+      _dio.close(force: true);
+    } catch (e) {
+      print('⚠️ Warning disposing old Dio: $e');
+    }
+
+    // Create fresh instance
+    _initializeDio();
+    print('✅ New Dio instance created');
+  }
+
+  /// Enable Joker mode - HTTP calls will be intercepted
+  void enableJoker() {
+    print('🃏 Enabling Joker mode...');
+    PokemonStubConfig.setupStubs();
+
+    // Recreate Dio to ensure it picks up Joker's interception
+    _recreateDio();
+    print('🃏 Joker mode enabled with fresh Dio instance');
+  }
+
+  /// Disable Joker mode - HTTP calls will go to real API
+  void disableJoker() {
+    print('🌐 Disabling Joker mode...');
+    Joker.stop();
+
+    // Recreate Dio to ensure it's no longer affected by Joker
+    _recreateDio();
+    print('🌐 Real API mode enabled with fresh Dio instance');
+  }
+
+  /// Check if Joker is currently active
+  /// We rely primarily on our internal flag since we control the state
+  bool get isJokerActive => Joker.isActive;
+
+  /// Fetch Pokemon list with proper source indication
   Future<PokemonListResponse> getPokemonList({
     int limit = 20,
     int offset = 0,
   }) async {
     try {
-      print(
-        '🔍 Making request to: $_baseUrl/pokemon?limit=$limit&offset=$offset',
-      );
+      final source = isJokerActive ? 'STUB' : 'REAL API';
+      print('🔍 Fetching Pokemon list from: $source');
+      print('🔍 URL: $_baseUrl/pokemon?limit=$limit&offset=$offset');
+      print('🔍 Joker.isActive: ${Joker.isActive}');
+      print('🔍 Total stubs available: ${Joker.stubs.length}');
 
       final response = await _dio.get(
         '/pokemon',
@@ -58,138 +103,66 @@ class PokemonService {
       );
 
       print('✅ Response received: ${response.statusCode}');
-      print('📦 Response type: ${response.data.runtimeType}');
 
-      if (response.data is Map<String, dynamic>) {
-        final data = response.data as Map<String, dynamic>;
-        print('📦 Response keys: ${data.keys.toList()}');
-        return PokemonListResponse.fromJson(data);
+      final data = response.data as Map<String, dynamic>;
+
+      // Check if response came from Joker
+      if (data.containsKey('loaded_from_joker') &&
+          data['loaded_from_joker'] == true) {
+        print('🃏 ✨ Data loaded from Joker stubs!');
       } else {
-        throw Exception(
-          'Invalid response format: expected Map<String, dynamic>',
-        );
+        print('🌐 📡 Data loaded from real Pokemon API');
       }
-    } on DioException catch (e) {
-      print('❌ DioException occurred:');
-      print('  Type: ${e.type}');
-      print('  Message: ${e.message}');
-      print('  Error: ${e.error}');
-      if (e.response != null) {
-        print('  Status Code: ${e.response!.statusCode}');
-        print('  Response Data: ${e.response!.data}');
-      }
-      print('  Request URL: ${e.requestOptions.uri}');
 
-      throw PokemonServiceException(
-        'Failed to fetch Pokemon list: ${e.message ?? 'Unknown error'}',
-        statusCode: e.response?.statusCode,
-      );
+      return PokemonListResponse.fromJson(data);
     } catch (e) {
-      print('❌ Unexpected error: $e');
-      throw PokemonServiceException('Unexpected error: $e');
+      print('❌ Error fetching Pokemon list: $e');
+      rethrow;
     }
   }
 
-  /// Fetches detailed information about a specific Pokemon
-  ///
-  /// [id] - The Pokemon ID to fetch
-  ///
-  /// Returns a [Pokemon] object with detailed information.
+  /// Fetch individual Pokemon
   Future<Pokemon> getPokemon(int id) async {
     try {
-      print('🔍 Fetching Pokemon with ID: $id');
+      final source = isJokerActive ? 'STUB' : 'REAL API';
+      print('🔍 Fetching Pokemon $id from: $source');
+
       final response = await _dio.get('/pokemon/$id');
 
-      print('✅ Pokemon response received: ${response.statusCode}');
+      final data = response.data as Map<String, dynamic>;
 
-      if (response.data is Map<String, dynamic>) {
-        return Pokemon.fromJson(response.data as Map<String, dynamic>);
+      // Check if response came from Joker
+      if (data.containsKey('loaded_from_joker') &&
+          data['loaded_from_joker'] == true) {
+        print('🃏 ✨ Pokemon $id loaded from Joker stub!');
       } else {
-        throw Exception('Invalid response format for Pokemon $id');
+        print('🌐 📡 Pokemon $id loaded from real API');
       }
-    } on DioException catch (e) {
-      print('❌ Failed to fetch Pokemon $id: ${e.message}');
-      throw PokemonServiceException(
-        'Failed to fetch Pokemon with ID $id: ${e.message ?? 'Unknown error'}',
-        statusCode: e.response?.statusCode,
-      );
+
+      return Pokemon.fromJson(data);
     } catch (e) {
-      print('❌ Unexpected error fetching Pokemon $id: $e');
-      throw PokemonServiceException('Unexpected error: $e');
+      print('❌ Error fetching Pokemon $id: $e');
+      rethrow;
     }
   }
 
-  /// Fetches detailed information about a Pokemon by name
-  ///
-  /// [name] - The Pokemon name to fetch
-  ///
-  /// Returns a [Pokemon] object with detailed information.
-  Future<Pokemon> getPokemonByName(String name) async {
-    try {
-      final response = await _dio.get('/pokemon/${name.toLowerCase()}');
-      return Pokemon.fromJson(response.data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      throw PokemonServiceException(
-        'Failed to fetch Pokemon "$name": ${e.message}',
-        statusCode: e.response?.statusCode,
-      );
-    } catch (e) {
-      throw PokemonServiceException('Unexpected error: $e');
-    }
-  }
-
-  /// Fetches multiple Pokemon by their IDs in parallel
-  ///
-  /// [ids] - List of Pokemon IDs to fetch
-  ///
-  /// Returns a list of [Pokemon] objects. If any request fails, the entire
-  /// operation will fail.
-  Future<List<Pokemon>> getMultiplePokemon(List<int> ids) async {
-    try {
-      final futures = ids.map((id) => getPokemon(id));
-      return await Future.wait(futures);
-    } catch (e) {
-      throw PokemonServiceException('Failed to fetch multiple Pokemon: $e');
-    }
-  }
-
-  /// Searches for Pokemon by name (partial match)
-  ///
-  /// [query] - The search term
-  /// [limit] - Maximum number of results to return
-  ///
-  /// This method fetches a list of Pokemon and filters by name.
-  /// Note: In a real application, you might want to implement server-side search.
-  Future<List<PokemonListItem>> searchPokemon({
-    required String query,
-    int limit = 1000,
-  }) async {
-    final pokemonList = await getPokemonList(limit: limit);
-    final lowercaseQuery = query.toLowerCase();
-
-    return pokemonList.results
-        .where((pokemon) => pokemon.name.contains(lowercaseQuery))
-        .toList();
-  }
-
-  /// Closes the Dio client and cleans up resources
   void dispose() {
-    _dio.close();
+    try {
+      _dio.close(force: true);
+      print('🧹 PokemonService disposed');
+    } catch (e) {
+      print('⚠️ Warning disposing PokemonService: $e');
+    }
   }
 }
 
-/// Exception thrown by [PokemonService] when an error occurs
+/// Exception class for Pokemon service errors
 class PokemonServiceException implements Exception {
   final String message;
   final int? statusCode;
 
-  const PokemonServiceException(this.message, {this.statusCode});
+  PokemonServiceException(this.message, {this.statusCode});
 
   @override
-  String toString() {
-    if (statusCode != null) {
-      return 'PokemonServiceException ($statusCode): $message';
-    }
-    return 'PokemonServiceException: $message';
-  }
+  String toString() => 'PokemonServiceException: $message';
 }
