@@ -57,7 +57,7 @@ void main() {
       test('should fetch mocked posts when Joker is enabled', () async {
         // Arrange
         Joker.start();
-        
+
         // Configurar stub para posts
         Joker.stubJsonArray(
           host: 'jsonplaceholder.typicode.com',
@@ -68,8 +68,9 @@ void main() {
               'id': 999,
               'userId': 999,
               'title': 'Test Post from Joker',
-              'body': 'This is a test post created by Joker for testing purposes.',
-            }
+              'body':
+                  'This is a test post created by Joker for testing purposes.',
+            },
           ],
           name: 'Test posts stub',
         );
@@ -88,7 +89,7 @@ void main() {
       test('should fetch mocked users when Joker is enabled', () async {
         // Arrange
         Joker.start();
-        
+
         // Configurar stub para users
         Joker.stubJsonArray(
           host: 'jsonplaceholder.typicode.com',
@@ -100,7 +101,7 @@ void main() {
               'name': 'Test User',
               'username': 'testuser',
               'email': 'test@joker.com',
-            }
+            },
           ],
           name: 'Test users stub',
         );
@@ -118,7 +119,7 @@ void main() {
       test('should handle different HTTP status codes with Joker', () async {
         // Arrange
         Joker.start();
-        
+
         // Stub que simula un error 404
         Joker.stubText(
           host: 'jsonplaceholder.typicode.com',
@@ -130,22 +131,21 @@ void main() {
         );
 
         // Act & Assert
-        expect(
-          () async => await apiService.getPosts(),
-          throwsException,
-        );
+        expect(() async => await apiService.getPosts(), throwsException);
       });
 
       test('should simulate network delay with Joker', () async {
         // Arrange
         Joker.start();
         const delay = Duration(milliseconds: 100);
-        
+
         Joker.stubJsonArray(
           host: 'jsonplaceholder.typicode.com',
           path: '/posts',
           method: 'GET',
-          data: [{'id': 1, 'userId': 1, 'title': 'Test', 'body': 'Test'}],
+          data: [
+            {'id': 1, 'userId': 1, 'title': 'Test', 'body': 'Test'},
+          ],
           delay: delay,
           name: 'Delayed posts stub',
         );
@@ -156,44 +156,56 @@ void main() {
         stopwatch.stop();
 
         // Assert
-        expect(stopwatch.elapsedMilliseconds, greaterThanOrEqualTo(delay.inMilliseconds - 10));
+        expect(
+          stopwatch.elapsedMilliseconds,
+          greaterThanOrEqualTo(delay.inMilliseconds - 10),
+        );
       });
     });
 
     group('Joker vs Real API Comparison', () {
-      test('should return consistent data structure between real and mock APIs', () async {
-        // Test con datos reales
-        Joker.stop();
-        final realPosts = await apiService.getPosts();
-        final realPost = realPosts.first;
+      test(
+        'should return consistent data structure between real and mock APIs',
+        () async {
+          // Test con datos reales
+          Joker.stop();
+          final realPosts = await apiService.getPosts();
+          final realPost = realPosts.first;
 
-        // Test con datos mock
-        Joker.start();
-        Joker.stubJsonArray(
-          host: 'jsonplaceholder.typicode.com',
-          path: '/posts',
-          method: 'GET',
-          data: [
-            {
-              'id': realPost.id,
-              'userId': realPost.userId,
-              'title': realPost.title,
-              'body': realPost.body,
-            }
-          ],
-          name: 'Consistent structure stub',
-        );
+          // Test con datos mock
+          Joker.start();
+          Joker.stubJsonArray(
+            host: 'jsonplaceholder.typicode.com',
+            path: '/posts',
+            method: 'GET',
+            data: [
+              {
+                'id': realPost.id,
+                'userId': realPost.userId,
+                'title': realPost.title,
+                'body': realPost.body,
+              },
+            ],
+            name: 'Consistent structure stub',
+          );
 
-        final mockPosts = await apiService.getPosts();
-        final mockPost = mockPosts.first;
+          final mockPosts = await apiService.getPosts();
+          final mockPost = mockPosts.first;
 
-        // Assert - misma estructura
-        expect(mockPost.runtimeType, equals(realPost.runtimeType));
-        expect(mockPost.id.runtimeType, equals(realPost.id.runtimeType));
-        expect(mockPost.title.runtimeType, equals(realPost.title.runtimeType));
-        expect(mockPost.body.runtimeType, equals(realPost.body.runtimeType));
-        expect(mockPost.userId.runtimeType, equals(realPost.userId.runtimeType));
-      });
+          // Assert - misma estructura
+          expect(mockPost.runtimeType, equals(realPost.runtimeType));
+          expect(mockPost.id.runtimeType, equals(realPost.id.runtimeType));
+          expect(
+            mockPost.title.runtimeType,
+            equals(realPost.title.runtimeType),
+          );
+          expect(mockPost.body.runtimeType, equals(realPost.body.runtimeType));
+          expect(
+            mockPost.userId.runtimeType,
+            equals(realPost.userId.runtimeType),
+          );
+        },
+      );
     });
   });
 }
