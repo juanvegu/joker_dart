@@ -197,10 +197,7 @@ void main() {
         };
 
         // Act & Assert
-        expect(
-          () => Post.fromJson(invalidJson),
-          throwsA(isA<TypeError>()),
-        );
+        expect(() => Post.fromJson(invalidJson), throwsA(isA<TypeError>()));
       });
 
       test('should throw error for missing required User fields', () {
@@ -212,10 +209,7 @@ void main() {
         };
 
         // Act & Assert
-        expect(
-          () => User.fromJson(incompleteJson),
-          throwsA(isA<TypeError>()),
-        );
+        expect(() => User.fromJson(incompleteJson), throwsA(isA<TypeError>()));
       });
 
       test('should throw error for null values in Comment', () {
@@ -229,10 +223,7 @@ void main() {
         };
 
         // Act & Assert
-        expect(
-          () => Comment.fromJson(nullJson),
-          throwsA(isA<TypeError>()),
-        );
+        expect(() => Comment.fromJson(nullJson), throwsA(isA<TypeError>()));
       });
     });
   });
