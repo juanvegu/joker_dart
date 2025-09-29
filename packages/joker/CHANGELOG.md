@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.1
+## 0.1.1+1
 
 - **Improved compatibility** with `dio` and `http` packages by fixing several `noSuchMethod` errors in HTTP client implementations
 - **Enhanced HTTP client response handling** to provide better compatibility with different HTTP client libraries
