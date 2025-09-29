@@ -14,7 +14,7 @@ Este es un ejemplo **NATIVO** que muestra:
 
 ## 🏗️ Arquitectura
 
-```
+```plaintext
 ┌─────────────────────┐
 │   Flutter App       │
 │                     │
@@ -61,7 +61,7 @@ El ejemplo incluye stubs pre-configurados para:
 
 ## 📂 Estructura del Proyecto
 
-```
+```plaintext
 lib/
 ├── main.dart                    # App principal + setup de Joker
 ├── config/
