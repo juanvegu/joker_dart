@@ -39,3 +39,5 @@
 library;
 
 export 'src/joker_base.dart';
+export 'src/joker_response.dart';
+export 'src/joker_stub.dart';

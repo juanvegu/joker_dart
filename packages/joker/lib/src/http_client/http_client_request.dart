@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 import '../expections/no_stub_found_exception.dart';
-import '../joker_base.dart';
+import '../joker_request.dart';
+import '../joker_platform_native.dart';
 import 'http_client_response.dart';
 import 'http_headers.dart';
 
@@ -16,13 +17,15 @@ class JokerHttpClientRequest implements HttpClientRequest {
   @override
   Future<HttpClientResponse> close() async {
     // Use this request for matching since it implements HttpClientRequest
-    final stub = Joker.findStub(this);
+    final stub = JokerPlatform.findStub(this);
 
     if (stub == null) {
       throw JokerNoStubFoundException('No stub found for $method $uri');
     }
 
-    final response = stub.responseProvider(this);
+    // Create a JokerRequest adapter for the response provider
+    final jokerRequest = _JokerHttpClientRequestAdapter(this);
+    final response = stub.responseProvider(jokerRequest);
 
     // Apply delay if specified
     if (response.delay != null) {
@@ -93,4 +96,17 @@ class JokerHttpClientRequest implements HttpClientRequest {
   dynamic noSuchMethod(Invocation invocation) {
     return null; // Most getters/setters can return null/do nothing in test mode
   }
+}
+
+/// Adapter to convert HttpClientRequest to JokerRequest
+class _JokerHttpClientRequestAdapter implements JokerRequest {
+  final HttpClientRequest _request;
+
+  _JokerHttpClientRequestAdapter(this._request);
+
+  @override
+  String get method => _request.method;
+
+  @override
+  Uri get uri => _request.uri;
 }

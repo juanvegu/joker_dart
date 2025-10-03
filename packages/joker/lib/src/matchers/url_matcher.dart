@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'joker_matcher.dart';
+import '../joker_request.dart';
 
 class UrlMatcher implements JokerMatcher {
   final String? host;
@@ -9,7 +9,7 @@ class UrlMatcher implements JokerMatcher {
   const UrlMatcher({this.host, this.path, this.method});
 
   @override
-  bool matches(HttpClientRequest request) {
+  bool matches(JokerRequest request) {
     // Check method if specified
     if (method != null &&
         request.method.toLowerCase() != method!.toLowerCase()) {

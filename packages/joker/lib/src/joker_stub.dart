@@ -1,11 +1,11 @@
-import 'dart:io';
+import 'joker_request.dart';
 import 'joker_response.dart';
 import 'matchers/joker_matcher.dart';
 
 /// A stub that defines how to respond to a matched HTTP request
 class JokerStub {
   final JokerMatcher matcher;
-  final JokerResponse Function(HttpClientRequest request) responseProvider;
+  final JokerResponse Function(JokerRequest request) responseProvider;
   final String? name;
 
   /// Whether this stub should be removed after being used once

@@ -1,45 +1,97 @@
 import 'dart:convert';
-import 'dart:io';
-import 'http_client/http_overrides.dart';
+import 'joker_request.dart';
 import 'joker_response.dart';
 import 'joker_stub.dart';
 import 'matchers/url_matcher.dart';
 
-class Joker {
-  static final List<JokerStub> _stubs = [];
-  static HttpOverrides? _previousOverrides;
-  static bool _isActive = false;
+// Conditional imports for platform-specific implementations
+import 'joker_platform_stub.dart'
+    if (dart.library.io) 'joker_platform_native.dart'
+    if (dart.library.html) 'joker_platform_web.dart';
 
+class Joker {
   /// Returns a list of all currently registered stubs
   ///
   /// The returned list is a copy, so modifying it won't affect the internal state.
-  static List<JokerStub> get stubs => List.unmodifiable(_stubs);
+  static List<JokerStub> get stubs => JokerPlatform.stubs;
 
   /// Returns true if Joker is currently active and intercepting requests
-  static bool get isActive => _isActive;
+  static bool get isActive => JokerPlatform.isActive;
 
   /// Starts intercepting HTTP requests
   ///
   /// This must be called before making any HTTP requests that you want to stub.
-  /// It installs a custom HttpOverrides that will check registered stubs
-  /// before making actual network requests.
+  ///
+  /// On native platforms (mobile, desktop, server), it installs a custom
+  /// HttpOverrides that will check registered stubs before making actual
+  /// network requests.
+  ///
+  /// On web, it sets Joker as active and requires HTTP clients to be configured
+  /// with Joker's interception logic (see joker_http and joker_dio packages).
   static void start() {
-    if (_isActive) return;
-
-    _previousOverrides = HttpOverrides.current;
-    HttpOverrides.global = JokerHttpOverrides();
-    _isActive = true;
+    JokerPlatform.start();
   }
 
   /// Stops intercepting HTTP requests and clears all stubs
   ///
-  /// This restores the original HttpOverrides and removes all registered stubs.
+  /// This restores the original state and removes all registered stubs.
   static void stop() {
-    if (!_isActive) return;
+    JokerPlatform.stop();
+  }
 
-    HttpOverrides.global = _previousOverrides;
-    _stubs.clear();
-    _isActive = false;
+  /// Creates an HTTP client that works with Joker stubs.
+  ///
+  /// **For web platform only** - On native platforms (mobile, desktop, server),
+  /// you can use the standard `http.Client()` directly as Joker uses HttpOverrides
+  /// to intercept all requests automatically.
+  ///
+  /// On web, use this factory method to create clients that will respect Joker stubs:
+  ///
+  /// ```dart
+  /// // In your service/repository layer with dependency injection
+  /// class ApiService {
+  ///   final http.Client client;
+  ///
+  ///   ApiService(this.client);
+  ///
+  ///   Future<User> getUser(int id) async {
+  ///     final response = await client.get(
+  ///       Uri.parse('https://api.example.com/users/$id'),
+  ///     );
+  ///     return User.fromJson(jsonDecode(response.body));
+  ///   }
+  /// }
+  ///
+  /// // In main.dart or dependency injection setup
+  /// void main() {
+  ///   if (kDebugMode) {
+  ///     Joker.start();
+  ///     // Add your stubs here
+  ///   }
+  ///
+  ///   // Inject the client
+  ///   final httpClient = Joker.createHttpClient();
+  ///   final apiService = ApiService(httpClient);
+  ///
+  ///   runApp(MyApp(apiService: apiService));
+  /// }
+  /// ```
+  ///
+  /// This method requires the `joker_http` package to be installed.
+  /// Add it to your `pubspec.yaml`:
+  /// ```yaml
+  /// dependencies:
+  ///   joker_http: ^0.0.1
+  /// ```
+  static dynamic createHttpClient() {
+    throw UnimplementedError(
+      'createHttpClient() requires the joker_http package.\n'
+      'Add it to your pubspec.yaml:\n'
+      'dependencies:\n'
+      '  joker_http: ^0.0.1\n\n'
+      'Then use: import \'package:joker_http/joker_http.dart\' as joker_http;\n'
+      'And call: joker_http.createHttpClient()',
+    );
   }
 
   /// Internal method to register a new stub for HTTP request interception
@@ -49,8 +101,7 @@ class Joker {
   ///
   /// Returns the added stub for potential later removal.
   static JokerStub _addStub(JokerStub stub) {
-    _stubs.add(stub);
-    return stub;
+    return JokerPlatform.addStub(stub);
   }
 
   /// Internal helper method to create and register URL-based stubs
@@ -230,16 +281,43 @@ class Joker {
     );
   }
 
-  /// Finds a stub that matches the given request
+  /// Removes a specific stub from the registered list
   ///
-  /// Returns the first matching stub, or null if no stub matches.
-  /// If the stub has removeAfterUse=true, it will be removed from the stubs list.
-  static JokerStub? findStub(HttpClientRequest request) {
-    for (int i = 0; i < _stubs.length; i++) {
-      final stub = _stubs[i];
+  /// Returns true if the stub was found and removed, false otherwise.
+  static bool removeStub(JokerStub stub) {
+    return JokerPlatform.removeStub(stub);
+  }
+
+  /// Removes all stubs with the given name
+  ///
+  /// Returns the number of stubs that were removed.
+  static int removeStubsByName(String name) {
+    return JokerPlatform.removeStubsByName(name);
+  }
+
+  /// Removes all registered stubs
+  static void clearStubs() {
+    JokerPlatform.clearStubs();
+  }
+
+  /// Finds a stub that matches the given request parameters
+  ///
+  /// This method is mainly used by HTTP client integrations (like joker_http
+  /// and joker_dio) to check if a request should be stubbed.
+  ///
+  /// Returns the matching stub, or null if no stub matches.
+  static JokerStub? findStubForRequest({
+    required String method,
+    required Uri uri,
+  }) {
+    // Create a mock request for matching
+    final request = _JokerRequestImpl(method: method, uri: uri);
+
+    for (int i = 0; i < stubs.length; i++) {
+      final stub = stubs[i];
       if (stub.matcher.matches(request)) {
         if (stub.removeAfterUse) {
-          _stubs.removeAt(i);
+          removeStub(stub);
         }
         return stub;
       }
@@ -247,26 +325,29 @@ class Joker {
     return null;
   }
 
-  /// Removes a specific stub from the registered list
+  /// Gets the response for a matched stub
   ///
-  /// Returns true if the stub was found and removed, false otherwise.
-  static bool removeStub(JokerStub stub) {
-    return _stubs.remove(stub);
-  }
-
-  /// Removes all stubs with the given name
+  /// This method is mainly used by HTTP client integrations to get the
+  /// response to return for a matched stub.
   ///
-  /// Returns the number of stubs that were removed.
-  static int removeStubsByName(String name) {
-    final toRemove = _stubs.where((stub) => stub.name == name).toList();
-    for (final stub in toRemove) {
-      _stubs.remove(stub);
-    }
-    return toRemove.length;
+  /// Returns the JokerResponse for the stub, or null if something goes wrong.
+  static JokerResponse? getResponseForStub(
+    JokerStub stub, {
+    required String method,
+    required Uri uri,
+  }) {
+    final request = _JokerRequestImpl(method: method, uri: uri);
+    return stub.responseProvider(request);
   }
+}
 
-  /// Removes all registered stubs
-  static void clearStubs() {
-    _stubs.clear();
-  }
+/// Internal implementation of JokerRequest for matching
+class _JokerRequestImpl implements JokerRequest {
+  @override
+  final String method;
+
+  @override
+  final Uri uri;
+
+  _JokerRequestImpl({required this.method, required this.uri});
 }
