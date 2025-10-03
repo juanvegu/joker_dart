@@ -12,7 +12,7 @@ dependencies:
 
   dio: ^5.9.0
   joker_dio:
-    path: ../../../joker_dio
+    path: ../../
 
 dev_dependencies:
   flutter_test:
