@@ -8,6 +8,10 @@ repository: https://github.com/juanvegu/joker_dart/tree/main/packages/joker_http
 environment:
   sdk: ^3.9.0
 
+dependencies:
+  http:
+  joker: 0.1.1+1
+
 dev_dependencies:
   lints: ^6.0.0
   test: ^1.26.3
